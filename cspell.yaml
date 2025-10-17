@@ -1,0 +1,12 @@
+version: "0.2"
+language: en
+useGitignore: true
+ignorePaths:
+  - .git
+  - .vscode
+words:
+  - automations
+  - devspace
+ignoreWords: []
+dictionaries: []
+dictionaryDefinitions: []

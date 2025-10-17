@@ -1,0 +1,27 @@
+version: v2beta1
+dev:
+  ha-config:
+    namespace: iot
+    labelSelector:
+      app.kubernetes.io/name: home-assistant
+    container: home-assistant
+    sync:
+      - path: ./config:/config
+        excludePaths:
+          - lost+found/
+          - .git/
+          - .devspace/
+          - ".storage/"
+          - "home-assistant_v2.db*"
+          - "home-assistant.log*"
+          - "tts/"
+          - ".ha_run.lock"
+          - ".HA_VERSION"
+          - ".cache/"
+          - ".cloud/"
+          - ".config/"
+          - "deps/"
+          - "secrets.yaml"
+        initialSync: preferNewest
+    terminal:
+      enabled: false

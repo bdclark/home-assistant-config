@@ -1,0 +1,18 @@
+- .git/
+- .gitignore
+- .devspace/
+- .rsync-filter
+# Preserve files even with --delete
+P lost+found/
+P .storage/
+P deps/
+P tts/
+P home-assistant.log*
+P home-assistant_v2.db*
+P .HA_VERSION
+P .cache/
+P .cloud/
+P .config/
+P .ha_run.lock
+# Ignore secrets file
+P secrets.yaml
