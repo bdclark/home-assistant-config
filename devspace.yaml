@@ -8,20 +8,22 @@ dev:
     sync:
       - path: ./config:/config
         excludePaths:
-          - lost+found/
-          - .git/
+          - .bash_history
+          - .bootstrapped
+          - .cache/
+          - .cloud/
+          - .config/
           - .devspace/
-          - ".storage/"
-          - "home-assistant_v2.db*"
-          - "home-assistant.log*"
-          - "tts/"
-          - ".ha_run.lock"
-          - ".HA_VERSION"
-          - ".cache/"
-          - ".cloud/"
-          - ".config/"
-          - "deps/"
-          - "secrets.yaml"
+          - .git/
+          - .ha_run.lock
+          - .HA_VERSION
+          - .storage/
+          - deps/
+          - home-assistant_v2.db*
+          - home-assistant.log*
+          - lost+found/
+          - secrets.yaml
+          - tts/
         initialSync: preferNewest
     terminal:
       enabled: false
