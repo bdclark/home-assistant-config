@@ -7,6 +7,11 @@ http:
   trusted_proxies:
     - 10.42.0.0/16
 
+recorder:
+  db_url: !env_var POSTGRES_URI
+  purge_keep_days: 60
+  commit_interval: 5 # default is 5
+
 # Load frontend themes from the themes folder
 frontend:
   themes: !include_dir_merge_named themes

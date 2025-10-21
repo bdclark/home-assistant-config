@@ -1,4 +1,5 @@
 version: v2beta1
+name: home-assistant
 dev:
   ha-config:
     namespace: iot
@@ -22,7 +23,7 @@ dev:
           - home-assistant_v2.db*
           - home-assistant.log*
           - lost+found/
-          - secrets.yaml
+          - secrets.yaml # Managed by Kubernetes secrets
           - tts/
         initialSync: preferNewest
     terminal:
