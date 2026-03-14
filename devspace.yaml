@@ -19,7 +19,11 @@ dev:
           - .ha_run.lock
           - .HA_VERSION
           - .storage/
+          - backups/
+          - "*.crt"
           - deps/
+          - "*.key"
+          - "*.pem"
           - home-assistant_v2.db*
           - home-assistant.log*
           - lost+found/

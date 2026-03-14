@@ -1,1 +1,28 @@
-[]
+- id: '1773527132508'
+  alias: Watch Movie
+  description: ''
+  use_blueprint:
+    path: bengber/lutron-sunnata-keypad-click-long-click-double-click.yaml
+    input:
+      sunnata_keypad: c961ebf447db2fbfe64d17efa4237468
+      button_3_single_click:
+      - action: light.turn_on
+        metadata: {}
+        target:
+          entity_id:
+          - light.sofa_table_left
+          - light.sofa_table_right
+        data:
+          transition: 2
+          color_temp_kelvin: 2200
+          brightness_pct: 12
+      - action: light.turn_on
+        target:
+          entity_id:
+          - light.floor_lamp_center
+          - light.floor_lamp_left
+          - light.floor_lamp_right
+        data:
+          brightness_pct: 5
+          kelvin: 2200
+          transition: 2

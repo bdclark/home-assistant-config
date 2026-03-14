@@ -1,0 +1,556 @@
+blueprint:
+  name: Lutron Sunnata Keypad Click/Long Click/Double Click
+  description: 'Advanced button press detection for Lutron Sunnata keypads supporting
+    single click, double click, and long press actions for each button.
+
+
+    Single click events will fire immediately if long press and double click are not
+    defined.
+
+    **NOTE:** In order to use the long press and double click handlers for buttons
+    other than Raise/Lower, the button behavior needs to be set as ***Sinngle Action***
+    in the Lutron designer software. (Using either ***Scene Toggle*** or ***Zone Toggle***
+    will prevent the button release events from being fired.)
+
+    '
+  domain: automation
+  homeassistant:
+    min_version: 2024.6.0
+  input:
+    sunnata_keypad:
+      name: Sunnata Keypad
+      description: The Lutron Sunnata keypad to control
+      selector:
+        device:
+          filter:
+          - integration: lutron_caseta
+            model: RRST-W2B-XX (SunnataKeypad)
+          - integration: lutron_caseta
+            model: RRST-HN2B-XX (SunnataHybridKeypad)
+          - integration: lutron_caseta
+            model: RRST-W3RL-XX (SunnataKeypad)
+          - integration: lutron_caseta
+            model: RRST-HN3RL-XX (SunnataHybridKeypad)
+          - integration: lutron_caseta
+            model: RRST-W4B-XX (SunnataKeypad)
+          - integration: lutron_caseta
+            model: RRST-HN4B-XX (SunnataHybridKeypad)
+          multiple: false
+    button_1_group:
+      name: Button 1 Actions
+      icon: mdi:numeric-1-box
+      collapsed: true
+      input:
+        button_1_single_click:
+          name: Single Click Action
+          description: Action to perform on single click of button 1
+          default: []
+          selector:
+            action: {}
+        button_1_double_click:
+          name: Double Click Action
+          description: Action to perform on double click of button 1 (leave empty
+            to disable double-click detection)
+          default: []
+          selector:
+            action: {}
+        button_1_long_press:
+          name: Long Press Action
+          description: Action to perform on long press of button 1 (leave empty to
+            disable long-press detection)
+          default: []
+          selector:
+            action: {}
+        button_1_release:
+          name: Release After Long Press Action
+          description: Action to perform when button 1 is released after a long press.
+            The special variable `long_press_duration` will bet set to the number
+            of milliseconds the button was held for.
+          default: []
+          selector:
+            action: {}
+    button_2_group:
+      name: Button 2 Actions
+      icon: mdi:numeric-2-box
+      collapsed: true
+      input:
+        button_2_single_click:
+          name: Single Click Action
+          description: Action to perform on single click of button 2
+          default: []
+          selector:
+            action: {}
+        button_2_double_click:
+          name: Double Click Action
+          description: Action to perform on double click of button 2
+          default: []
+          selector:
+            action: {}
+        button_2_long_press:
+          name: Long Press Action
+          description: Action to perform on long press of button 2
+          default: []
+          selector:
+            action: {}
+        button_2_release:
+          name: Release After Long Press Action
+          description: Action to perform when button 2 is released after a long press.
+            The special variable `long_press_duration` will bet set to the number
+            of milliseconds the button was held for.
+          default: []
+          selector:
+            action: {}
+    button_3_group:
+      name: Button 3 Actions (for 3 or 4 button keypads)
+      icon: mdi:numeric-3-box
+      collapsed: true
+      input:
+        button_3_single_click:
+          name: Single Click Action
+          description: Action to perform on single click of button 3
+          default: []
+          selector:
+            action: {}
+        button_3_double_click:
+          name: Double Click Action
+          description: Action to perform on double click of button 3
+          default: []
+          selector:
+            action: {}
+        button_3_long_press:
+          name: Long Press Action
+          description: Action to perform on long press of button 3
+          default: []
+          selector:
+            action: {}
+        button_3_release:
+          name: Release After Long Press Action
+          description: Action to perform when button 3 is released after a long press.
+            The special variable `long_press_duration` will bet set to the number
+            of milliseconds the button was held for.
+          default: []
+          selector:
+            action: {}
+    button_4_group:
+      name: Button 4 Actions (for 4 button keypads)
+      icon: mdi:numeric-4-box
+      collapsed: true
+      input:
+        button_4_single_click:
+          name: Single Click Action
+          description: Action to perform on single click of button 4
+          default: []
+          selector:
+            action: {}
+        button_4_double_click:
+          name: Double Click Action
+          description: Action to perform on double click of button 4
+          default: []
+          selector:
+            action: {}
+        button_4_long_press:
+          name: Long Press Action
+          description: Action to perform on long press of button 4
+          default: []
+          selector:
+            action: {}
+        button_4_release:
+          name: Release After Long Press Action
+          description: Action to perform when button 4 is released after a long press.
+            The special variable `long_press_duration` will bet set to the number
+            of milliseconds the button was held for.
+          default: []
+          selector:
+            action: {}
+    lower_button_group:
+      name: Lower Button Actions (for 3-button w/ Raise & Lower)
+      icon: mdi:arrow-down-bold-box
+      collapsed: true
+      input:
+        button_lower_single_click:
+          name: Single Click Action
+          description: Action to perform on single click of lower button
+          default: []
+          selector:
+            action: {}
+        button_lower_double_click:
+          name: Double Click Action
+          description: Action to perform on double click of lower button
+          default: []
+          selector:
+            action: {}
+        button_lower_long_press:
+          name: Long Press Action
+          description: Action to perform on long press of lower button
+          default: []
+          selector:
+            action: {}
+        button_lower_release:
+          name: Release After Long Press Action
+          description: Action to perform when lower button is released after a long
+            press. The special variable `long_press_duration` will bet set to the
+            number of milliseconds the button was held for.
+          default: []
+          selector:
+            action: {}
+    raise_button_group:
+      name: Raise Button Actions (for 3-button w/ Raise & Lower)
+      icon: mdi:arrow-up-bold-box
+      collapsed: true
+      input:
+        button_raise_single_click:
+          name: Single Click Action
+          description: Action to perform on single click of raise button
+          default: []
+          selector:
+            action: {}
+        button_raise_double_click:
+          name: Double Click Action
+          description: Action to perform on double click of raise button
+          default: []
+          selector:
+            action: {}
+        button_raise_long_press:
+          name: Long Press Action
+          description: Action to perform on long press of raise button
+          default: []
+          selector:
+            action: {}
+        button_raise_release:
+          name: Release After Long Press Action
+          description: Action to perform when raise button is released after a long
+            press. The special variable `long_press_duration` will bet set to the
+            number of milliseconds the button was held for.
+          default: []
+          selector:
+            action: {}
+    advanced_settings_group:
+      name: Advanced Settings
+      icon: mdi:cog
+      collapsed: true
+      input:
+        long_press_timeout:
+          name: Long Press Timeout
+          description: How long (in milliseconds) before a press becomes a long press
+          default: 500
+          selector:
+            number:
+              min: 100.0
+              max: 2000.0
+              step: 50.0
+              unit_of_measurement: ms
+              mode: slider
+        double_click_timeout:
+          name: Double Click Timeout
+          description: Maximum time (in milliseconds) between clicks for double-click
+            detection
+          default: 250
+          selector:
+            number:
+              min: 100.0
+              max: 1000.0
+              step: 50.0
+              unit_of_measurement: ms
+              mode: slider
+        max_long_press_duration:
+          name: Maximum Long Press Duration
+          description: Maximum time (in seconds) a long press can be held for before
+            it is automatically considered released
+          default: 60
+          selector:
+            number:
+              min: 1.0
+              max: 3600.0
+              step: 1.0
+              unit_of_measurement: s
+              mode: slider
+  source_url: https://raw.githubusercontent.com/bengber/home-assistant-lutron-sunnata-blueprints/refs/heads/main/blueprints/automation/lutron-sunnata-keypad-click-long-click-double-click.yaml
+trigger_variables:
+  sunnata_keypad_device: !input sunnata_keypad
+triggers:
+- trigger: event
+  event_type: lutron_caseta_button_event
+  event_data:
+    device_id: '{{ sunnata_keypad_device }}'
+    action: press
+  variables:
+    leap_number: leap_{{ trigger.event.data.leap_button_number }}
+    original_leap_button_number: '{{ trigger.event.data.leap_button_number }}'
+    leap_trigger_type: '{{ trigger.event.data.action }}'
+    original_press_start_time: '{{ trigger.event.time_fired }}'
+conditions: []
+variables:
+  long_press_timeout: !input long_press_timeout
+  double_click_timeout: !input double_click_timeout
+  max_long_press_duration: !input max_long_press_duration
+  double_click_actions:
+    leap_1: !input button_1_double_click
+    leap_2: !input button_2_double_click
+    leap_3: !input button_3_double_click
+    leap_4: !input button_4_double_click
+    leap_18: !input button_lower_double_click
+    leap_19: !input button_raise_double_click
+  long_click_actions:
+    leap_1: !input button_1_long_press
+    leap_2: !input button_2_long_press
+    leap_3: !input button_3_long_press
+    leap_4: !input button_4_long_press
+    leap_18: !input button_lower_long_press
+    leap_19: !input button_raise_long_press
+  long_click_release_actions:
+    leap_1: !input button_1_release
+    leap_2: !input button_2_release
+    leap_3: !input button_3_release
+    leap_4: !input button_4_release
+    leap_18: !input button_lower_release
+    leap_19: !input button_raise_release
+actions:
+- choose:
+  - conditions:
+    - condition: template
+      value_template: "{# If a double click or long click action is defined, check\n
+        \  for release and followup events #}\n{{\n   (double_click_actions[leap_number]|length
+        > 0 or\n    long_click_actions[leap_number]|length > 0 or\n    long_click_release_actions[leap_number]|length
+        > 0) }}"
+    sequence:
+    - wait_for_trigger:
+      - trigger: event
+        event_type: lutron_caseta_button_event
+        event_data:
+          device_id: '{{ sunnata_keypad_device }}'
+          leap_button_number: '{{ original_leap_button_number }}'
+          action: release
+      timeout:
+        milliseconds: '{{ long_press_timeout }}'
+    - choose:
+      - conditions:
+        - condition: template
+          value_template: '{# No release detected, we''re in a long press #} {{ not
+            wait.trigger }}'
+        sequence:
+        - variables:
+            long_press_start_time: '{{ now() }}'
+        - parallel:
+          - choose:
+            - conditions:
+              - '{{ leap_number == ''leap_1'' }}'
+              sequence: !input button_1_long_press
+            - conditions:
+              - '{{ leap_number == ''leap_2'' }}'
+              sequence: !input button_2_long_press
+            - conditions:
+              - '{{ leap_number == ''leap_3'' }}'
+              sequence: !input button_3_long_press
+            - conditions:
+              - '{{ leap_number == ''leap_4'' }}'
+              sequence: !input button_4_long_press
+            - conditions:
+              - '{{ leap_number == ''leap_18'' }}'
+              sequence: !input button_lower_long_press
+            - conditions:
+              - '{{ leap_number == ''leap_19'' }}'
+              sequence: !input button_raise_long_press
+          - sequence:
+            - wait_for_trigger:
+              - trigger: event
+                event_type: lutron_caseta_button_event
+                event_data:
+                  device_id: '{{ sunnata_keypad_device }}'
+                  leap_button_number: '{{ original_leap_button_number }}'
+                  action: release
+              timeout:
+                seconds: '{{ max_long_press_duration }}'
+            - variables:
+                long_press_duration: "{{ (as_timestamp(now()) -\n   as_timestamp(long_press_start_time))\n
+                  \  * 1000 }}"
+            - choose:
+              - conditions:
+                - '{{ leap_number == ''leap_1'' }}'
+                sequence: !input button_1_release
+              - conditions:
+                - '{{ leap_number == ''leap_2'' }}'
+                sequence: !input button_2_release
+              - conditions:
+                - '{{ leap_number == ''leap_3'' }}'
+                sequence: !input button_3_release
+              - conditions:
+                - '{{ leap_number == ''leap_4'' }}'
+                sequence: !input button_4_release
+              - conditions:
+                - '{{ leap_number == ''leap_18'' }}'
+                sequence: !input button_lower_release
+              - conditions:
+                - '{{ leap_number == ''leap_19'' }}'
+                sequence: !input button_raise_release
+      - conditions:
+        - condition: template
+          value_template: "{# A single click occurred. If a double click is\n   configured,
+            check for it. Otherwise, do a\n   single-click action. #}\n{{ double_click_actions[leap_number]|length
+            > 0 }}"
+        sequence:
+        - wait_for_trigger:
+          - trigger: event
+            event_type: lutron_caseta_button_event
+            event_data:
+              device_id: '{{ sunnata_keypad_device }}'
+              leap_button_number: '{{ original_leap_button_number }}'
+              action: press
+          timeout:
+            milliseconds: '{{ double_click_timeout }}'
+        - choose:
+          - conditions:
+            - condition: template
+              value_template: "{# We didn't detect a second press.\n   It's a single
+                click. #}\n{{ not wait.trigger }}"
+            sequence:
+            - choose:
+              - conditions:
+                - '{{ leap_number == ''leap_1'' }}'
+                sequence: !input button_1_single_click
+              - conditions:
+                - '{{ leap_number == ''leap_2'' }}'
+                sequence: !input button_2_single_click
+              - conditions:
+                - '{{ leap_number == ''leap_3'' }}'
+                sequence: !input button_3_single_click
+              - conditions:
+                - '{{ leap_number == ''leap_4'' }}'
+                sequence: !input button_4_single_click
+              - conditions:
+                - '{{ leap_number == ''leap_18'' }}'
+                sequence: !input button_lower_single_click
+              - conditions:
+                - '{{ leap_number == ''leap_19'' }}'
+                sequence: !input button_raise_single_click
+          default:
+          - wait_for_trigger:
+            - trigger: event
+              event_type: lutron_caseta_button_event
+              event_data:
+                device_id: '{{ sunnata_keypad_device }}'
+                leap_button_number: '{{ original_leap_button_number }}'
+                action: release
+            timeout:
+              milliseconds: '{{ long_press_timeout }}'
+          - choose:
+            - conditions:
+              - condition: template
+                value_template: "{# We didn't release the second press in\n   time.
+                  Let's treat that as a long\n   click. #}\n{{ not wait.trigger }}"
+              sequence:
+              - variables:
+                  long_press_start_time: '{{ now() }}'
+              - parallel:
+                - choose:
+                  - conditions:
+                    - '{{ leap_number == ''leap_1'' }}'
+                    sequence: !input button_1_long_press
+                  - conditions:
+                    - '{{ leap_number == ''leap_2'' }}'
+                    sequence: !input button_2_long_press
+                  - conditions:
+                    - '{{ leap_number == ''leap_3'' }}'
+                    sequence: !input button_3_long_press
+                  - conditions:
+                    - '{{ leap_number == ''leap_4'' }}'
+                    sequence: !input button_4_long_press
+                  - conditions:
+                    - '{{ leap_number == ''leap_18'' }}'
+                    sequence: !input button_lower_long_press
+                  - conditions:
+                    - '{{ leap_number == ''leap_19'' }}'
+                    sequence: !input button_raise_long_press
+                - sequence:
+                  - wait_for_trigger:
+                    - trigger: event
+                      event_type: lutron_caseta_button_event
+                      event_data:
+                        device_id: '{{ sunnata_keypad_device }}'
+                        leap_button_number: '{{ original_leap_button_number }}'
+                        action: release
+                    timeout:
+                      seconds: '{{ max_long_press_duration }}'
+                  - variables:
+                      long_press_duration: "{{ (as_timestamp(now()) -\n   as_timestamp(\n
+                        \  long_press_start_time))\n   * 1000 }}"
+                  - choose:
+                    - conditions:
+                      - '{{ leap_number == ''leap_1'' }}'
+                      sequence: !input button_1_release
+                    - conditions:
+                      - '{{ leap_number == ''leap_2'' }}'
+                      sequence: !input button_2_release
+                    - conditions:
+                      - '{{ leap_number == ''leap_3'' }}'
+                      sequence: !input button_3_release
+                    - conditions:
+                      - '{{ leap_number == ''leap_4'' }}'
+                      sequence: !input button_4_release
+                    - conditions:
+                      - '{{ leap_number == ''leap_18'' }}'
+                      sequence: !input button_lower_release
+                    - conditions:
+                      - '{{ leap_number == ''leap_19'' }}'
+                      sequence: !input button_raise_release
+            default:
+            - choose:
+              - conditions:
+                - '{{ leap_number == ''leap_1'' }}'
+                sequence: !input button_1_double_click
+              - conditions:
+                - '{{ leap_number == ''leap_2'' }}'
+                sequence: !input button_2_double_click
+              - conditions:
+                - '{{ leap_number == ''leap_3'' }}'
+                sequence: !input button_3_double_click
+              - conditions:
+                - '{{ leap_number == ''leap_4'' }}'
+                sequence: !input button_4_double_click
+              - conditions:
+                - '{{ leap_number == ''leap_18'' }}'
+                sequence: !input button_lower_double_click
+              - conditions:
+                - '{{ leap_number == ''leap_19'' }}'
+                sequence: !input button_raise_double_click
+      default:
+      - choose:
+        - conditions:
+          - '{{ leap_number == ''leap_1'' }}'
+          sequence: !input button_1_single_click
+        - conditions:
+          - '{{ leap_number == ''leap_2'' }}'
+          sequence: !input button_2_single_click
+        - conditions:
+          - '{{ leap_number == ''leap_3'' }}'
+          sequence: !input button_3_single_click
+        - conditions:
+          - '{{ leap_number == ''leap_4'' }}'
+          sequence: !input button_4_single_click
+        - conditions:
+          - '{{ leap_number == ''leap_18'' }}'
+          sequence: !input button_lower_single_click
+        - conditions:
+          - '{{ leap_number == ''leap_19'' }}'
+          sequence: !input button_raise_single_click
+  default:
+    sequence:
+    - choose:
+      - conditions:
+        - '{{ leap_number == ''leap_1'' }}'
+        sequence: !input button_1_single_click
+      - conditions:
+        - '{{ leap_number == ''leap_2'' }}'
+        sequence: !input button_2_single_click
+      - conditions:
+        - '{{ leap_number == ''leap_3'' }}'
+        sequence: !input button_3_single_click
+      - conditions:
+        - '{{ leap_number == ''leap_4'' }}'
+        sequence: !input button_4_single_click
+      - conditions:
+        - '{{ leap_number == ''leap_18'' }}'
+        sequence: !input button_lower_single_click
+      - conditions:
+        - '{{ leap_number == ''leap_19'' }}'
+        sequence: !input button_raise_single_click
+mode: single
