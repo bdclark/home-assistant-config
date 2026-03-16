@@ -1,0 +1,34 @@
+- name: Movie Time
+  entities:
+    light.sofa_table_left:
+      state: "on"
+      brightness_pct: 12
+      kelvin: 2200
+    light.sofa_table_right:
+      state: "on"
+      brightness_pct: 12
+      kelvin: 2200
+    light.floor_lamp_center:
+      state: "on"
+      brightness_pct: 5
+      kelvin: 2200
+    light.floor_lamp_left:
+      state: "on"
+      brightness_pct: 5
+      kelvin: 2200
+    light.floor_lamp_right:
+      state: "on"
+      brightness_pct: 5
+      kelvin: 2200
+- name: Bed Time
+  entities:
+    light.sofa_table_left:
+      state: "off"
+    light.sofa_table_right:
+      state: "off"
+    light.floor_lamp_center:
+      state: "off"
+    light.floor_lamp_left:
+      state: "off"
+    light.floor_lamp_right:
+      state: "off"

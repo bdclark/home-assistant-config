@@ -1,28 +1,28 @@
 - id: '1773527132508'
-  alias: Watch Movie
+  alias: Living Room Media Wall Keypad Buttons
   description: ''
   use_blueprint:
     path: bengber/lutron-sunnata-keypad-click-long-click-double-click.yaml
     input:
       sunnata_keypad: c961ebf447db2fbfe64d17efa4237468
       button_3_single_click:
-      - action: light.turn_on
+      - action: scene.turn_on
         metadata: {}
         target:
-          entity_id:
-          - light.sofa_table_left
-          - light.sofa_table_right
+          entity_id: scene.movie_time
         data:
-          transition: 2
-          color_temp_kelvin: 2200
-          brightness_pct: 12
-      - action: light.turn_on
+          transition: 3
+- id: '1773625583313'
+  alias: Dining Rear Hall Entry Keypad Buttons
+  description: ''
+  use_blueprint:
+    path: bengber/lutron-sunnata-keypad-click-long-click-double-click.yaml
+    input:
+      sunnata_keypad: aa916d18a22b3513ea789e3130c81bbd
+      button_4_single_click:
+      - action: scene.turn_on
+        metadata: {}
         target:
-          entity_id:
-          - light.floor_lamp_center
-          - light.floor_lamp_left
-          - light.floor_lamp_right
+          entity_id: scene.bed_time
         data:
-          brightness_pct: 5
-          kelvin: 2200
-          transition: 2
+          transition: 5
