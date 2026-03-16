@@ -26,3 +26,21 @@
           entity_id: scene.bed_time
         data:
           transition: 5
+      button_4_long_press:
+      - action: scene.turn_on
+        metadata: {}
+        target:
+          entity_id: scene.bed_time
+        data:
+          transition: 5
+      - action: light.turn_off
+        metadata: {}
+        target:
+          entity_id: light.exterior_carport_downlights
+        data:
+          transition: 2
+      - action: switch.turn_off
+        metadata: {}
+        target:
+          entity_id: switch.exterior_landscape_north_landscape
+        data: {}
