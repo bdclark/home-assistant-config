@@ -1,6 +1,41 @@
 
-# Loads default set of integrations. Do not remove.
+# Loads default set of integrations.
+# Do not remove unless declaring each manually
 default_config:
+# Manually declare all except those I don't want.
+# assist_pipeline:
+# backup:
+# bluetooth:
+# config:
+# conversation:
+# dhcp:
+# energy:
+# file:
+# go2rtc:
+# history:
+# homeassistant_alerts:
+# cloud:
+# image_upload:
+# logbook:
+# media_source:
+# mobile_app:
+# my:
+# ssdp:
+# stream:
+# sun:
+# usage_prediction:
+# usb:
+# webhook:
+# zeroconf:
+
+homeassistant:
+  name: Home
+  latitude: !secret home_latitude
+  longitude: !secret home_longitude
+  elevation: 14
+  unit_system: us_customary
+  time_zone: America/New_York
+  internal_url: https://ha.clark.zone
 
 http:
   use_x_forwarded_for: true
@@ -19,3 +54,146 @@ frontend:
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
+
+waste_collection_schedule:
+  sources:
+    - name: static
+      args:
+        type: Trash
+        frequency: WEEKLY
+        interval: 1
+        start: '2026-01-01'
+        until: '2030-12-31'
+        excludes:
+          - '2026-01-01'
+          - '2026-01-19'
+          - '2026-05-25'
+          - '2026-06-19'
+          - '2026-07-04'
+          - '2026-09-07'
+          - '2026-11-26'
+          - '2026-12-25'
+          - '2027-01-01'
+          - '2027-01-18'
+          - '2027-05-31'
+          - '2027-06-19'
+          - '2027-07-04'
+          - '2027-09-06'
+          - '2027-11-25'
+          - '2027-12-25'
+          - '2028-01-01'
+          - '2028-01-17'
+          - '2028-05-29'
+          - '2028-06-19'
+          - '2028-07-04'
+          - '2028-09-04'
+          - '2028-11-23'
+          - '2028-12-25'
+          - '2029-01-01'
+          - '2029-01-15'
+          - '2029-05-28'
+          - '2029-06-19'
+          - '2029-07-04'
+          - '2029-09-03'
+          - '2029-11-22'
+          - '2029-12-25'
+          - '2030-01-01'
+          - '2030-01-21'
+          - '2030-05-27'
+          - '2030-06-19'
+          - '2030-07-04'
+          - '2030-09-02'
+          - '2030-11-28'
+          - '2030-12-25'
+        weekdays:
+          TU: 1
+          FR: 1
+    - name: static
+      args:
+        type: Recycling
+        frequency: WEEKLY
+        interval: 1
+        start: '2026-01-01'
+        until: '2030-12-31'
+        excludes:
+          # - '2026-01-01'
+          - '2026-01-19'
+          - '2026-05-25'
+          - '2026-06-19'
+          - '2026-07-04'
+          - '2026-09-07'
+          - '2026-11-26'
+          - '2026-12-25'
+          # - '2027-01-01'
+          - '2027-01-18'
+          - '2027-05-31'
+          - '2027-06-19'
+          - '2027-07-04'
+          - '2027-09-06'
+          - '2027-11-25'
+          - '2027-12-25'
+          # - '2028-01-01'
+          - '2028-01-17'
+          - '2028-05-29'
+          - '2028-06-19'
+          - '2028-07-04'
+          - '2028-09-04'
+          - '2028-11-23'
+          - '2028-12-25'
+          # - '2029-01-01'
+          - '2029-01-15'
+          - '2029-05-28'
+          - '2029-06-19'
+          - '2029-07-04'
+          - '2029-09-03'
+          - '2029-11-22'
+          - '2029-12-25'
+          # - '2030-01-01'
+          - '2030-01-21'
+          - '2030-05-27'
+          - '2030-06-19'
+          - '2030-07-04'
+          - '2030-09-02'
+          - '2030-11-28'
+          - '2030-12-25'
+        weekdays: FR
+
+sensor:
+  - platform: waste_collection_schedule
+    source_index: 0
+    name: trash_pickup
+    details_format: upcoming
+    # count: 1
+    leadtime: 7
+    value_template: >-
+      {% if value.daysTo == 0 %}
+        Today
+      {% elif value.daysTo == 1 %}
+        Tomorrow
+      {% else %}
+        In {{ value.daysTo }} days
+      {% endif %}
+    date_template: '{{ value.date.strftime("%x") }}'
+    add_days_to: true
+    # event_index: EVENT_INDEX
+    types:
+      - Trash
+  - platform: waste_collection_schedule
+    source_index: 1
+    name: recycling_pickup
+    details_format: upcoming
+    # count: 1
+    leadtime: 7
+    value_template: >-
+      {% if value.daysTo == 0 %}
+        Today
+      {% elif value.daysTo == 1 %}
+        Tomorrow
+      {% else %}
+        In {{ value.daysTo }} days
+      {% endif %}
+    date_template: '{{ value.date.strftime("%x") }}'
+    add_days_to: true
+    # event_index: EVENT_INDEX
+    types:
+      - Recycling

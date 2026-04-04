@@ -20,6 +20,8 @@ dev:
           - .HA_VERSION
           - .storage/
           - backups/
+          - custom_components/
+          - www/
           - "*.crt"
           - deps/
           - "*.key"

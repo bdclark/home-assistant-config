@@ -1,0 +1,175 @@
+avr_turn_on_with_source:
+  alias: AVR - Turn On with Source
+  description: Powers on the TX-RZ830 and selects a source, waiting for it to be ready
+    before switching input.
+  icon: mdi:audio-video
+  mode: restart
+  fields:
+    source:
+      name: Source
+      description: The input source to select (e.g. Shield, Apple TV, TV)
+      required: true
+      example: Shield
+      selector:
+        select:
+          options:
+          - CBL/SAT
+          - Shield
+          - AUX
+          - PC
+          - BD/DVD
+          - Apple TV
+          - TV
+          - PHONO
+          - Sonos
+          - TUNER
+          - NETWORK
+          - BLUETOOTH
+  sequence:
+  - action: media_player.turn_on
+    target:
+      entity_id: media_player.tx_rz830
+  - wait_template: '{{ is_state(''media_player.tx_rz830'', ''on'') }}'
+    timeout: 00:00:15
+    continue_on_timeout: false
+  - action: media_player.select_source
+    target:
+      entity_id: media_player.tx_rz830
+    data:
+      source: '{{ source }}'
+atv_turn_on_with_source:
+  alias: ATV - Turn On with Source
+  description: Wakes an Apple TV and selects a source, waiting for it to leave standby
+    before switching input.
+  icon: mdi:apple
+  mode: parallel
+  max: 5
+  fields:
+    atv_entity_id:
+      name: Entity ID
+      description: The Apple TV media player entity to control
+      required: true
+      example: media_player.living_room_apple_tv
+      selector:
+        entity:
+          domain: media_player
+    source:
+      name: Source
+      description: The app/source to launch (e.g. Netflix, Disney+, YouTube)
+      required: true
+      example: Netflix
+      selector:
+        text: {}
+  sequence:
+  - action: media_player.turn_on
+    target:
+      entity_id: '{{ atv_entity_id }}'
+  - wait_template: '{{ not is_state(atv_entity_id, ''standby'') }}'
+    timeout: 00:00:20
+    continue_on_timeout: false
+  - action: media_player.select_source
+    target:
+      entity_id: '{{ atv_entity_id }}'
+    data:
+      source: '{{ source }}'
+shield_launch_plex:
+  alias: Shield - Launch Plex
+  description: Reliably launches Plex on the NVIDIA Shield regardless of current power
+    state. Wakes the device, waits until ready, then launches the Plex app.
+  icon: mdi:plex
+  mode: single
+  sequence:
+  - action: media_player.turn_on
+    target:
+      entity_id: media_player.living_room_shield_android_remote
+  - wait_template: '{{ not is_state(''media_player.living_room_shield_android_remote'',
+      ''off'') }}'
+    timeout: 00:00:30
+    continue_on_timeout: false
+  - delay:
+      milliseconds: 500
+  - action: media_player.play_media
+    target:
+      entity_id: media_player.living_room_shield_android_remote
+    data:
+      media_content_type: app
+      media_content_id: com.plexapp.android
+living_room_all_off:
+  alias: Living Room - All Off
+  description: Powers down the living room AV chain in the correct order. Active source
+    first, then AVR, then TV. Safe to call regardless of current state.
+  icon: mdi:power
+  mode: single
+  sequence:
+  - alias: Turn off Shield
+    action: media_player.turn_off
+    target:
+      entity_id: media_player.living_room_shield_android_remote
+  - alias: Turn off Apple TV
+    action: media_player.turn_off
+    target:
+      entity_id: media_player.living_room_apple_tv
+  - alias: Wait briefly for sources to shut down
+    delay:
+      seconds: 2
+  - alias: Turn off AVR
+    action: media_player.turn_off
+    target:
+      entity_id: media_player.tx_rz830
+  - alias: Wait for AVR to power off
+    wait_template: '{{ is_state(''media_player.tx_rz830'', ''off'') }}'
+    timeout: 00:00:15
+    continue_on_timeout: true
+  - alias: Turn off TV
+    action: media_player.turn_off
+    target:
+      entity_id: media_player.living_room_tv_android_remote
+light_ensure_minimum_brightness:
+  alias: Light - Ensure Minimum Brightness
+  description: Turns a light on at a minimum brightness percent if it is off or below
+    the minimum. If already on at or above the minimum brightness, does nothing. Optionally
+    applies a transition.
+  icon: mdi:brightness-5
+  mode: parallel
+  max: 10
+  fields:
+    light_entity:
+      name: Light Entity
+      description: The light entity to control
+      required: true
+      example: light.living_room
+      selector:
+        entity:
+          domain: light
+    min_brightness_pct:
+      name: Minimum Brightness %
+      description: Minimum brightness percentage (1-100)
+      required: true
+      example: 30
+      selector:
+        number:
+          min: 1
+          max: 100
+          unit_of_measurement: '%'
+    transition:
+      name: Transition
+      description: Transition time in seconds (optional)
+      required: false
+      example: 2
+      selector:
+        number:
+          min: 0
+          max: 30
+          unit_of_measurement: s
+  sequence:
+  - if:
+    - condition: template
+      value_template: '{{ states(light_entity) == ''off'' or (state_attr(light_entity,
+        ''brightness'') | default(0) / 2.55) | round(0) < min_brightness_pct }}'
+    then:
+    - action: light.turn_on
+      target:
+        entity_id: '{{ light_entity }}'
+      data:
+        brightness_pct: '{{ min_brightness_pct }}'
+        transition: '{{ transition if transition is defined else omit }}'
