@@ -19,6 +19,7 @@ dev:
           - .ha_run.lock
           - .HA_VERSION
           - .storage/
+          - .local/
           - backups/
           - custom_components/
           - www/
@@ -31,6 +32,7 @@ dev:
           - lost+found/
           - secrets.yaml # Managed by Kubernetes secrets
           - tts/
+          - bubble_card/
         initialSync: preferNewest
     terminal:
       enabled: false
