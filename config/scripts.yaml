@@ -173,3 +173,40 @@ light_ensure_minimum_brightness:
       data:
         brightness_pct: '{{ min_brightness_pct }}'
         transition: '{{ transition if transition is defined else omit }}'
+lgtv_turn_on_with_source:
+  alias: LGTV - Turn On with Source
+  description: Wakes an LG TV and selects a source, waiting for it to leave off or
+    unavailable before launching app.
+  icon: mdi:television
+  mode: parallel
+  max: 5
+  fields:
+    lgtv_entity_id:
+      name: Entity ID
+      description: The LG TV media player entity to control
+      required: true
+      example: media_player.master_bedroom_tv
+      selector:
+        entity:
+          domain: media_player
+    source:
+      name: Source
+      description: The app/source to launch (e.g. YouTube, HBO Max, Peacock)
+      required: true
+      example: YouTube
+      selector:
+        text: {}
+  sequence:
+  - action: media_player.turn_on
+    target:
+      entity_id: '{{ lgtv_entity_id }}'
+  - wait_template: '{{ states(lgtv_entity_id) not in [''off'', ''unavailable'', ''unknown'']
+      }}'
+    continue_on_timeout: false
+    timeout: 00:00:60
+  - delay: 00:00:02
+  - action: media_player.select_source
+    target:
+      entity_id: '{{ lgtv_entity_id }}'
+    data:
+      source: '{{ source }}'

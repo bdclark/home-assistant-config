@@ -105,3 +105,27 @@
         target:
           entity_id: button.house_living_room_media_wall_position_3_keypad_movie
   mode: parallel
+- id: '1775851381766'
+  alias: Turn On Master Bedroom TV
+  description: Turn on LG TV with Wake On LAN
+  triggers:
+  - trigger: webostv.turn_on
+    entity_id: media_player.master_bedroom_tv
+  actions:
+  - action: wake_on_lan.send_magic_packet
+    data:
+      mac: d0:cd:bf:18:ac:fc
+      broadcast_address: 192.168.32.255
+- id: '1775852105413'
+  alias: Turn On Office TV
+  description: Turn on LG TV with Wake On LAN
+  triggers:
+  - trigger: webostv.turn_on
+    entity_id: media_player.office_tv
+  conditions: []
+  actions:
+  - action: wake_on_lan.send_magic_packet
+    data:
+      mac: 30:34:db:a7:82:ee
+      broadcast_address: 192.168.32.255
+  mode: single
