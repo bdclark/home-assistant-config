@@ -22,7 +22,7 @@ dev:
           - .local/
           - backups/
           - custom_components/
-          - www/
+          - www/community/
           - "*.crt"
           - deps/
           - "*.key"

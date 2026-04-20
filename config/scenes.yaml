@@ -2,24 +2,29 @@
   entities:
     light.sofa_table_left:
       state: "on"
-      brightness_pct: 12
-      kelvin: 2200
+      brightness: 31
+      color_temp_kelvin: 2200
+      transition: 3
     light.sofa_table_right:
       state: "on"
-      brightness_pct: 12
-      kelvin: 2200
+      brightness: 31
+      color_temp_kelvin: 2200
+      transition: 3
     light.floor_lamp_center:
       state: "on"
-      brightness_pct: 5
-      kelvin: 2200
+      brightness: 13
+      color_temp_kelvin: 2200
+      transition: 3
     light.floor_lamp_left:
       state: "on"
-      brightness_pct: 5
-      kelvin: 2200
+      brightness: 13
+      color_temp_kelvin: 2200
+      transition: 3
     light.floor_lamp_right:
       state: "on"
-      brightness_pct: 5
-      kelvin: 2200
+      brightness: 13
+      color_temp_kelvin: 2200
+      transition: 3
 - name: Bed Time
   entities:
     light.sofa_table_left:

@@ -96,34 +96,72 @@ shield_launch_plex:
       media_content_id: com.plexapp.android
 living_room_all_off:
   alias: Living Room - All Off
-  description: Powers down the living room AV chain in the correct order. Active source
-    first, then AVR, then TV. Safe to call regardless of current state.
+  description: Powers down the living room AV chain in the correct order. TV first
+    to kill CEC, then sources, then AVR. Only sends commands to devices that are actually
+    on.
   icon: mdi:power
   mode: single
   sequence:
-  - alias: Turn off Shield
-    action: media_player.turn_off
-    target:
-      entity_id: media_player.living_room_shield_android_remote
-  - alias: Turn off Apple TV
-    action: media_player.turn_off
-    target:
-      entity_id: media_player.living_room_apple_tv
-  - alias: Wait briefly for sources to shut down
-    delay:
-      seconds: 2
-  - alias: Turn off AVR
-    action: media_player.turn_off
-    target:
-      entity_id: media_player.tx_rz830
-  - alias: Wait for AVR to power off
-    wait_template: '{{ is_state(''media_player.tx_rz830'', ''off'') }}'
-    timeout: 00:00:15
-    continue_on_timeout: true
-  - alias: Turn off TV
-    action: media_player.turn_off
-    target:
+  - alias: Turn off TV first (kills CEC chain)
+    if:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: media_player.living_room_tv_android_remote
+        state: 'off'
+    then:
+    - action: media_player.turn_off
+      target:
+        entity_id: media_player.living_room_tv_android_remote
+  - alias: Wait for TV to confirm off
+    wait_for_trigger:
+    - trigger: state
       entity_id: media_player.living_room_tv_android_remote
+      to: 'off'
+    timeout:
+      seconds: 15
+    continue_on_timeout: true
+  - alias: Turn off Shield (only if on)
+    if:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: media_player.living_room_shield_android_remote
+        state: 'off'
+    then:
+    - action: media_player.turn_off
+      target:
+        entity_id: media_player.living_room_shield_android_remote
+  - alias: Turn off Apple TV (only if on)
+    if:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: media_player.living_room_apple_tv
+        state: 'off'
+    then:
+    - action: media_player.turn_off
+      target:
+        entity_id: media_player.living_room_apple_tv
+  - alias: Wait for Shield to confirm off
+    wait_for_trigger:
+    - trigger: state
+      entity_id: media_player.living_room_shield_android_remote
+      to: 'off'
+    timeout:
+      seconds: 20
+    continue_on_timeout: true
+  - alias: Turn off AVR last (only if on)
+    if:
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: media_player.tx_rz830
+        state: 'off'
+    then:
+    - action: media_player.turn_off
+      target:
+        entity_id: media_player.tx_rz830
 light_ensure_minimum_brightness:
   alias: Light - Ensure Minimum Brightness
   description: Turns a light on at a minimum brightness percent if it is off or below
@@ -210,3 +248,33 @@ lgtv_turn_on_with_source:
       entity_id: '{{ lgtv_entity_id }}'
     data:
       source: '{{ source }}'
+doorbell_announce:
+  alias: Doorbell Announcement
+  description: Plays a doorbell announcement on Music Assistant players. Fire Pit
+    is excluded late at night. Sonos Move and Living Room are permanently excluded.
+  icon: mdi:doorbell
+  mode: restart
+  fields:
+    sound_url:
+      name: Sound URL
+      description: URL of the announcement sound to play
+      required: false
+      default: https://ha.clark.zone/local/sounds/mysterious-ringtone.mp3
+      selector:
+        text: {}
+  sequence:
+  - variables:
+      target_players: "{% set players = namespace(list=[]) %}\n{% set players.list
+        = players.list + ['media_player.kitchen_mass'] %}\n{% set players.list = players.list
+        + ['media_player.patio_mass'] %}\n{% set players.list = players.list + ['media_player.master_bedroom_mass']
+        %}\n{% set players.list = players.list + ['media_player.master_bath_mass']
+        %}\n{% set players.list = players.list + ['media_player.guest_bath_mass']
+        %}\n{% if now().hour >= 8 and now().hour < 21 %}\n  {% set players.list =
+        players.list + ['media_player.fire_pit_mass'] %}\n{% endif %}\n{{ players.list
+        }}"
+  - action: music_assistant.play_announcement
+    data:
+      url: '{{ sound_url | default(''https://ha.clark.zone/local/sounds/mysterious-ringtone.mp3'')
+        }}'
+    target:
+      entity_id: '{{ target_players }}'

@@ -10,8 +10,14 @@
         metadata: {}
         target:
           entity_id: scene.movie_time
+        data: {}
+      button_2_single_click:
+      - action: scene.turn_on
+        metadata: {}
+        target:
+          entity_id: scene.living_room_entertain
         data:
-          transition: 3
+          transition: 2
 - id: '1773625583313'
   alias: Rear Hall Keypad Buttons
   description: ''
@@ -126,6 +132,33 @@
   actions:
   - action: wake_on_lan.send_magic_packet
     data:
-      mac: 30:34:db:a7:82:ee
+      mac: 60:75:6c:88:ef:be
       broadcast_address: 192.168.32.255
+  mode: single
+- id: '1775937427444'
+  alias: Living Area Keypad Buttons
+  description: ''
+  use_blueprint:
+    path: bengber/lutron-sunnata-keypad-click-long-click-double-click.yaml
+    input:
+      sunnata_keypad: 294c5e1c02303640061ba02200fc8685
+      button_2_single_click:
+      - action: scene.turn_on
+        metadata: {}
+        target:
+          entity_id: scene.living_room_entertain
+        data:
+          transition: 2
+- id: '1776015132964'
+  alias: Front Doorbell Ring
+  description: Trigger announcement when front doorbell button is pressed
+  triggers:
+  - entity_id: sensor.front_doorbell_last_doorbell_ring
+    trigger: state
+  conditions: []
+  actions:
+  - action: script.doorbell_announce
+    data:
+      sound_url: https://ha.clark.zone/local/sounds/mysterious-ringtone.mp3
+    metadata: {}
   mode: single
