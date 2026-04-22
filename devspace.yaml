@@ -32,7 +32,9 @@ dev:
           - lost+found/
           - secrets.yaml # Managed by Kubernetes secrets
           - tts/
-          - bubble_card/
+          # - bubble_card/
+        uploadExcludePaths:
+          - www/sounds/
         initialSync: preferNewest
     terminal:
       enabled: false
