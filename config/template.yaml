@@ -1,0 +1,108 @@
+- binary_sensor:
+    - name: "Kitchen Lights On"
+      unique_id: "kitchen_lights_on"
+      device_class: light
+      state: >
+        {{ expand(area_entities('kitchen'))
+            | selectattr('domain', 'eq', 'light')
+            | selectattr('state', 'eq', 'on')
+            | list | count > 0 }}
+
+    - name: "Living Area Lights On"
+      unique_id: "living_area_lights_on"
+      device_class: light
+      state: >
+        {{ expand(area_entities('living_area'))
+           | selectattr('domain', 'eq', 'light')
+           | selectattr('state', 'eq', 'on')
+           | list | count > 0 }}
+
+    - name: "Master Bedroom Lights On"
+      unique_id: "master_bedroom_lights_on"
+      device_class: light
+      state: >
+        {{ expand(area_entities('master_bedroom'))
+           | selectattr('domain', 'eq', 'light')
+           | selectattr('state', 'eq', 'on')
+           | list | count > 0 }}
+
+    - name: "Master Bath Lights On"
+      unique_id: "master_bath_lights_on"
+      device_class: light
+      state: >
+        {{ expand(area_entities('master_bath'))
+           | selectattr('domain', 'eq', 'light')
+           | selectattr('state', 'eq', 'on')
+           | list | count > 0 }}
+
+    # - name: "Guest Bedroom Lights On"
+    #   unique_id: "guest_bedroom_lights_on"
+    #   device_class: light
+    #   state: >
+    #     {{ expand(area_entities('guest_bedroom'))
+    #        | selectattr('domain', 'eq', 'light')
+    #        | selectattr('state', 'eq', 'on')
+    #        | list | count > 0 }}
+
+    # - name: "Guest Bath Lights On"
+    #   unique_id: "guest_bath_lights_on"
+    #   device_class: light
+    #   state: >
+    #     {{ expand(area_entities('guest_bath'))
+    #        | selectattr('domain', 'eq', 'light')
+    #        | selectattr('state', 'eq', 'on')
+    #        | list | count > 0 }}
+
+    - name: "Office Lights On"
+      unique_id: "office_lights_on"
+      device_class: light
+      state: >
+        {{ expand(area_entities('office'))
+           | selectattr('domain', 'eq', 'light')
+           | selectattr('state', 'eq', 'on')
+           | list | count > 0 }}
+
+    - name: "Mud Room Lights On"
+      unique_id: "mud_room_lights_on"
+      device_class: light
+      state: >
+        {{ expand(area_entities('mud_room'))
+           | selectattr('domain', 'eq', 'light')
+           | selectattr('state', 'eq', 'on')
+           | list | count > 0 }}
+
+    - name: "Powder Room Lights On"
+      unique_id: "powder_room_lights_on"
+      device_class: light
+      state: >
+        {{ expand(area_entities('powder_room'))
+           | selectattr('domain', 'eq', 'light')
+           | selectattr('state', 'eq', 'on')
+           | list | count > 0 }}
+
+    - name: "Laundry Room Lights On"
+      unique_id: "laundry_room_lights_on"
+      device_class: light
+      state: >
+        {{ expand(area_entities('laundry_room'))
+           | selectattr('domain', 'eq', 'light')
+           | selectattr('state', 'eq', 'on')
+           | list | count > 0 }}
+
+    - name: "Patio Lights On"
+      unique_id: "patio_lights_on"
+      device_class: light
+      state: >
+        {{ expand(area_entities('patio'))
+           | selectattr('domain', 'eq', 'light')
+           | selectattr('state', 'eq', 'on')
+           | list | count > 0 }}
+
+    - name: "Exterior Lights On"
+      unique_id: "exterior_lights_on"
+      device_class: light
+      state: >
+        {{ expand(area_entities('exterior'))
+           | selectattr('domain', 'eq', 'light')
+           | selectattr('state', 'eq', 'on')
+           | list | count > 0 }}

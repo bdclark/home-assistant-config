@@ -1,0 +1,38 @@
+- platform: waste_collection_schedule
+  source_index: 0
+  name: trash_pickup
+  details_format: upcoming
+  # count: 1
+  leadtime: 7
+  value_template: >-
+    {% if value.daysTo == 0 %}
+      Today
+    {% elif value.daysTo == 1 %}
+      Tomorrow
+    {% else %}
+      In {{ value.daysTo }} days
+    {% endif %}
+  date_template: '{{ value.date.strftime("%x") }}'
+  add_days_to: true
+  # event_index: EVENT_INDEX
+  types:
+    - Trash
+- platform: waste_collection_schedule
+  source_index: 0
+  name: recycling_pickup
+  details_format: upcoming
+  # count: 1
+  leadtime: 7
+  value_template: >-
+    {% if value.daysTo == 0 %}
+      Today
+    {% elif value.daysTo == 1 %}
+      Tomorrow
+    {% else %}
+      In {{ value.daysTo }} days
+    {% endif %}
+  date_template: '{{ value.date.strftime("%x") }}'
+  add_days_to: true
+  # event_index: EVENT_INDEX
+  types:
+    - Recycling

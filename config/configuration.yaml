@@ -57,6 +57,8 @@ frontend:
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
+sensor: !include sensor.yaml
+template: !include template.yaml
 
 waste_collection_schedule:
   sources:
@@ -160,43 +162,3 @@ waste_collection_schedule:
               - '2030-09-02'
               - '2030-11-28'
               - '2030-12-25'
-
-sensor:
-  - platform: waste_collection_schedule
-    source_index: 0
-    name: trash_pickup
-    details_format: upcoming
-    # count: 1
-    leadtime: 7
-    value_template: >-
-      {% if value.daysTo == 0 %}
-        Today
-      {% elif value.daysTo == 1 %}
-        Tomorrow
-      {% else %}
-        In {{ value.daysTo }} days
-      {% endif %}
-    date_template: '{{ value.date.strftime("%x") }}'
-    add_days_to: true
-    # event_index: EVENT_INDEX
-    types:
-      - Trash
-  - platform: waste_collection_schedule
-    source_index: 0
-    name: recycling_pickup
-    details_format: upcoming
-    # count: 1
-    leadtime: 7
-    value_template: >-
-      {% if value.daysTo == 0 %}
-        Today
-      {% elif value.daysTo == 1 %}
-        Tomorrow
-      {% else %}
-        In {{ value.daysTo }} days
-      {% endif %}
-    date_template: '{{ value.date.strftime("%x") }}'
-    add_days_to: true
-    # event_index: EVENT_INDEX
-    types:
-      - Recycling
