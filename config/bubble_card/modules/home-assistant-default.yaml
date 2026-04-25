@@ -132,4 +132,3 @@ home-assistant-default:
     .bubble-button-container .bubble-background {
         border-radius: calc(var(--bubble-button-border-radius, var(--bubble-border-radius, calc(var(--row-height,56px)/2))) / 1.1);
     }
-  is_global: true

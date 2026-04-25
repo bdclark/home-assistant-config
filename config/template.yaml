@@ -4,9 +4,14 @@
       device_class: light
       state: >
         {{ expand(area_entities('kitchen'))
-            | selectattr('domain', 'eq', 'light')
-            | selectattr('state', 'eq', 'on')
-            | list | count > 0 }}
+           | selectattr('domain', 'eq', 'light')
+           | selectattr('state', 'eq', 'on')
+           | list | count > 0
+           or
+           expand(label_entities('light_switch')
+           | select('in', area_entities('kitchen')) | list)
+           | selectattr('state', 'eq', 'on')
+           | list | count > 0 }}
 
     - name: "Living Area Lights On"
       unique_id: "living_area_lights_on"
@@ -14,6 +19,11 @@
       state: >
         {{ expand(area_entities('living_area'))
            | selectattr('domain', 'eq', 'light')
+           | selectattr('state', 'eq', 'on')
+           | list | count > 0
+           or
+           expand(label_entities('light_switch')
+           | select('in', area_entities('living_area')) | list)
            | selectattr('state', 'eq', 'on')
            | list | count > 0 }}
 
@@ -24,6 +34,11 @@
         {{ expand(area_entities('master_bedroom'))
            | selectattr('domain', 'eq', 'light')
            | selectattr('state', 'eq', 'on')
+           | list | count > 0
+           or
+           expand(label_entities('light_switch')
+           | select('in', area_entities('master_bedroom')) | list)
+           | selectattr('state', 'eq', 'on')
            | list | count > 0 }}
 
     - name: "Master Bath Lights On"
@@ -33,7 +48,19 @@
         {{ expand(area_entities('master_bath'))
            | selectattr('domain', 'eq', 'light')
            | selectattr('state', 'eq', 'on')
+           | list | count > 0
+           or
+           expand(label_entities('light_switch')
+           | select('in', area_entities('master_bath')) | list)
+           | selectattr('state', 'eq', 'on')
            | list | count > 0 }}
+
+    - name: "Master Suite Lights On"
+      unique_id: "master_suite_lights_on"
+      device_class: light
+      state: >
+        {{ is_state('binary_sensor.master_bedroom_lights_on', 'on')
+          or is_state('binary_sensor.master_bath_lights_on', 'on') }}
 
     # - name: "Guest Bedroom Lights On"
     #   unique_id: "guest_bedroom_lights_on"
@@ -41,6 +68,11 @@
     #   state: >
     #     {{ expand(area_entities('guest_bedroom'))
     #        | selectattr('domain', 'eq', 'light')
+    #        | selectattr('state', 'eq', 'on')
+    #        | list | count > 0
+    #        or
+    #        expand(label_entities('light_switch')
+    #        | select('in', area_entities('guest_bedroom')) | list)
     #        | selectattr('state', 'eq', 'on')
     #        | list | count > 0 }}
 
@@ -51,6 +83,11 @@
     #     {{ expand(area_entities('guest_bath'))
     #        | selectattr('domain', 'eq', 'light')
     #        | selectattr('state', 'eq', 'on')
+    #        | list | count > 0
+    #        or
+    #        expand(label_entities('light_switch')
+    #        | select('in', area_entities('guest_bath')) | list)
+    #        | selectattr('state', 'eq', 'on')
     #        | list | count > 0 }}
 
     - name: "Office Lights On"
@@ -59,6 +96,11 @@
       state: >
         {{ expand(area_entities('office'))
            | selectattr('domain', 'eq', 'light')
+           | selectattr('state', 'eq', 'on')
+           | list | count > 0
+           or
+           expand(label_entities('light_switch')
+           | select('in', area_entities('office')) | list)
            | selectattr('state', 'eq', 'on')
            | list | count > 0 }}
 
@@ -69,14 +111,10 @@
         {{ expand(area_entities('mud_room'))
            | selectattr('domain', 'eq', 'light')
            | selectattr('state', 'eq', 'on')
-           | list | count > 0 }}
-
-    - name: "Powder Room Lights On"
-      unique_id: "powder_room_lights_on"
-      device_class: light
-      state: >
-        {{ expand(area_entities('powder_room'))
-           | selectattr('domain', 'eq', 'light')
+           | list | count > 0
+           or
+           expand(label_entities('light_switch')
+           | select('in', area_entities('mud_room')) | list)
            | selectattr('state', 'eq', 'on')
            | list | count > 0 }}
 
@@ -87,6 +125,32 @@
         {{ expand(area_entities('laundry_room'))
            | selectattr('domain', 'eq', 'light')
            | selectattr('state', 'eq', 'on')
+           | list | count > 0
+           or
+           expand(label_entities('light_switch')
+           | select('in', area_entities('laundry_room')) | list)
+           | selectattr('state', 'eq', 'on')
+           | list | count > 0 }}
+
+    - name: "Laundry/Mud Room Lights On"
+      unique_id: "laundry_mud_room_lights_on"
+      device_class: light
+      state: >
+        {{ is_state('binary_sensor.laundry_room_lights_on', 'on')
+          or is_state('binary_sensor.mud_room_lights_on', 'on') }}
+
+    - name: "Powder Room Lights On"
+      unique_id: "powder_room_lights_on"
+      device_class: light
+      state: >
+        {{ expand(area_entities('powder_room'))
+           | selectattr('domain', 'eq', 'light')
+           | selectattr('state', 'eq', 'on')
+           | list | count > 0
+           or
+           expand(label_entities('light_switch')
+           | select('in', area_entities('powder_room')) | list)
+           | selectattr('state', 'eq', 'on')
            | list | count > 0 }}
 
     - name: "Patio Lights On"
@@ -96,6 +160,11 @@
         {{ expand(area_entities('patio'))
            | selectattr('domain', 'eq', 'light')
            | selectattr('state', 'eq', 'on')
+           | list | count > 0
+           or
+           expand(label_entities('light_switch')
+           | select('in', area_entities('patio')) | list)
+           | selectattr('state', 'eq', 'on')
            | list | count > 0 }}
 
     - name: "Exterior Lights On"
@@ -104,5 +173,10 @@
       state: >
         {{ expand(area_entities('exterior'))
            | selectattr('domain', 'eq', 'light')
+           | selectattr('state', 'eq', 'on')
+           | list | count > 0
+           or
+           expand(label_entities('light_switch')
+           | select('in', area_entities('exterior')) | list)
            | selectattr('state', 'eq', 'on')
            | list | count > 0 }}
