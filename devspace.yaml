@@ -23,6 +23,7 @@ dev:
           - backups/
           - custom_components/
           - www/community/
+          - "!www/community/streamline-card/streamline_templates.yaml"
           - "*.crt"
           - deps/
           - "*.key"

@@ -1,0 +1,105 @@
+main_footer:
+  card:
+    type: custom:bubble-card
+    card_type: sub-buttons
+    footer_mode: true
+    # footer_full_width: true
+    sub_button:
+      bottom:
+        - name: Home
+          icon: mdi:home
+          tap_action:
+            action: navigate
+            navigation_path: /dashboard-main/home
+        - name: Lights
+          icon: mdi:lightbulb
+          tap_action:
+            action: navigate
+            navigation_path: /dashboard-main/home
+        - name: Settings
+          icon: mdi:cog
+          tap_action:
+            action: navigate
+            navigation_path: /dashboard-main/home
+    hide_main_background: true
+    rows: 0.938
+lutron_light:
+  default:
+    - name:
+    - icon:
+  card:
+    type: custom:bubble-card
+    card_type: button
+    button_type: slider
+    name: '[[name]]'
+    icon: '[[icon]]'
+    sub_button:
+      main: []
+      bottom: []
+    entity: '[[entity]]'
+    use_accent_color: true
+    tap_action:
+      action: perform-action
+      perform_action: script.toggle_lutron_light
+      target: {}
+      data:
+        entity_id: '[[entity]]'
+    button_action:
+      tap_action:
+        action: perform-action
+        perform_action: script.toggle_lutron_light
+        target: {}
+        data:
+          entity_id: '[[entity]]'
+    modules: []
+    styles: |-
+      * {
+          --bubble-accent-color: var(--accent-color);
+          --bubble-button-accent-color: var(--accent-color);
+      }
+exhaust_fan:
+  default:
+    - name:
+  card:
+    type: custom:bubble-card
+    card_type: button
+    button_type: switch
+    entity: '[[entity]]'
+    name: '[[name]]'
+    tap_action:
+      action: toggle
+    styles: |-
+      .bubble-icon {
+        animation: ${state === 'on' ? 'slow-rotate 4s linear infinite' : ''};
+      }
+      @keyframes slow-rotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    icon: mdi:fan
+big_ass_fan:
+  default:
+    - name:
+  card:
+    type: custom:bubble-card
+    card_type: button
+    button_type: slider
+    entity: '[[entity]]'
+    name: '[[name]]'
+    sub_button:
+      main:
+        - entity: '[[whoosh_entity]]'
+          icon: mdi:weather-windy
+          tap_action:
+            action: toggle
+      bottom: []
+    styles: |
+      .bubble-icon {
+        animation: ${state === 'on' ? 'slow-rotate 4s linear infinite' : ''};
+      }
+      @keyframes slow-rotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    tap_action:
+      action: toggle

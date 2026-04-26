@@ -278,3 +278,57 @@ doorbell_announce:
         }}'
     target:
       entity_id: '{{ target_players }}'
+toggle_lutron_light:
+  alias: Toggle Lutron Light
+  description: Toggles a Lutron light with solar elevation-aware default brightness.
+    If the light is on, turns it off. If off, turns it on at a brightness derived
+    from sun elevation unless an override is supplied.
+  icon: mdi:lightbulb-auto
+  mode: parallel
+  max: 20
+  fields:
+    entity_id:
+      name: Entity ID
+      description: The light or switch entity to toggle
+      required: true
+      selector:
+        entity:
+          domain:
+          - light
+          - switch
+    brightness_override:
+      name: Brightness Override
+      description: Optional brightness (0-255). If omitted, brightness is derived
+        from solar elevation.
+      required: false
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 255
+          step: 1
+  sequence:
+  - alias: Turn off if on
+    if:
+    - condition: template
+      value_template: '{{ is_state(entity_id, ''on'') }}'
+    then:
+    - action: homeassistant.turn_off
+      target:
+        entity_id: '{{ entity_id }}'
+    else:
+    - alias: Resolve target brightness
+      variables:
+        elevation: '{{ states(''sensor.home_sun_elevation'') | float(0) }}'
+        solar_brightness: '{# This is a comment #} {% if states(''sensor.home_sun_elevation'')
+          | float(0) > 30 %}204{% elif states(''sensor.home_sun_elevation'') | float(0)
+          > 5 %}153{% elif states(''sensor.home_sun_elevation'') | float(0) > -6 %}89{%
+          else %}38{% endif %}'
+        target_brightness: '{{ brightness_override if (brightness_override is defined
+          and brightness_override > 0) else solar_brightness }}'
+    - alias: Turn on at resolved brightness
+      action: light.turn_on
+      target:
+        entity_id: '{{ entity_id }}'
+      data:
+        brightness: '{{ target_brightness | int }}'
