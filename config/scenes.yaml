@@ -1,39 +1,40 @@
 - name: Movie Time
   entities:
-    light.sofa_table_left:
+    light.living_room_sofa_table:
       state: "on"
       brightness: 31
       color_temp_kelvin: 2200
       transition: 3
-    light.sofa_table_right:
-      state: "on"
-      brightness: 31
-      color_temp_kelvin: 2200
-      transition: 3
-    light.floor_lamp_center:
-      state: "on"
-      brightness: 13
-      color_temp_kelvin: 2200
-      transition: 3
-    light.floor_lamp_left:
-      state: "on"
-      brightness: 13
-      color_temp_kelvin: 2200
-      transition: 3
-    light.floor_lamp_right:
+    light.living_room_floor_lamp:
       state: "on"
       brightness: 13
       color_temp_kelvin: 2200
       transition: 3
 - name: Bed Time
   entities:
-    light.sofa_table_left:
+    light.living_room:
       state: "off"
-    light.sofa_table_right:
-      state: "off"
-    light.floor_lamp_center:
-      state: "off"
-    light.floor_lamp_left:
-      state: "off"
-    light.floor_lamp_right:
-      state: "off"
+- name: Bedroom Bedtime
+  entities:
+    # Master Bedroom — Hue lights
+    light.master_bedroom:
+      state: "on"
+      brightness: 70
+      color_temp_kelvin: 2200
+    # Master Closet — Lutron
+    light.house_master_suite_master_closet_under_cabinet:
+      state: "on"
+      brightness: 86
+    # Master Bath — Lutron
+    light.house_master_suite_master_bath_toilet_downlight:
+      state: "on"
+      brightness: 40
+    light.house_master_suite_master_bath_tina_vanity:
+      state: "on"
+      brightness: 45
+    light.house_master_suite_master_bath_brian_vanity:
+      state: "on"
+      brightness: 45
+    light.house_master_suite_master_bath_under_vanity:
+      state: "on"
+      brightness: 86

@@ -332,3 +332,20 @@ toggle_lutron_light:
         entity_id: '{{ entity_id }}'
       data:
         brightness: '{{ target_brightness | int }}'
+master_suite_all_off:
+  alias: Master Suite - All Off
+  description: Turns off all lights and switches in master bedroom and master bath
+    areas.
+  icon: mdi:bed-clock
+  mode: single
+  sequence:
+  - action: light.turn_off
+    target:
+      area_id:
+      - master_bedroom
+      - master_bath
+  # - action: switch.turn_off
+  #   target:
+  #     area_id:
+  #     - master_bedroom
+  #     - master_bath
