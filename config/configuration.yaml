@@ -56,6 +56,14 @@ frontend:
   extra_module_url:
     - /local/community/custom-brand-icons/custom-brand-icons.js
     - /hacsfiles/lovelace-card-mod/card-mod.js?hacstag=190927524421
+    - /hacsfiles/material-you-utilities/material-you-utilities.min.js
+
+panel_custom:
+  - name: material-you-panel
+    url_path: material-you-configuration
+    sidebar_title: Material You Utilities
+    sidebar_icon: mdi:material-design
+    module_url: /hacsfiles/material-you-utilities/material-you-utilities.min.js
 
 automation: !include automations.yaml
 script: !include scripts.yaml

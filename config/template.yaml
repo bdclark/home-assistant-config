@@ -180,3 +180,33 @@
            | select('in', area_entities('exterior')) | list)
            | selectattr('state', 'eq', 'on')
            | list | count > 0 }}
+
+- sensor:
+    - name: "Lights On Counter"
+      unique_id: "lights_on_counter"
+      icon: mdi:lightbulb-group
+      state: >
+        {{ (states.light
+           | rejectattr('attributes.entity_id', 'defined')
+           | selectattr('state', 'eq', 'on')
+           | list | count)
+           +
+           (expand(label_entities('light_switch'))
+           | selectattr('state', 'eq', 'on')
+           | list | count) }}
+
+    - name: "Fans On Counter"
+      unique_id: "fans_on_counter"
+      icon: mdi:fan
+      state: >
+        {{ expand(label_entities('fan_switch'))
+           | selectattr('state', 'eq', 'on')
+           | list | count }}
+
+    - name: "Ceiling Fans On Counter"
+      unique_id: "ceiling_fans_on_counter"
+      icon: mdi:ceiling-fan
+      state: >
+        {{ expand(label_entities('ceiling_fan'))
+           | selectattr('state', 'eq', 'on')
+           | list | count }}
