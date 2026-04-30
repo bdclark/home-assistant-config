@@ -186,14 +186,28 @@
       unique_id: "lights_on_counter"
       icon: mdi:lightbulb-group
       state: >
-        {{ (states.light
-           | rejectattr('attributes.entity_id', 'defined')
-           | selectattr('state', 'eq', 'on')
-           | list | count)
-           +
-           (expand(label_entities('light_switch'))
-           | selectattr('state', 'eq', 'on')
-           | list | count) }}
+        {{
+          (
+            states.light
+            | rejectattr('attributes.entity_id', 'defined')
+            | rejectattr('entity_id', 'in', expand(label_entities('light_fixture_member')) | map(attribute='entity_id') | list)
+            | rejectattr('entity_id', 'in', expand(label_entities('light_fixture_group')) | map(attribute='entity_id') | list)
+            | selectattr('state', 'eq', 'on')
+            | list | count
+          )
+          +
+          (
+            expand(label_entities('light_fixture_group'))
+            | selectattr('state', 'eq', 'on')
+            | list | count
+          )
+          +
+          (
+            expand(label_entities('light_switch'))
+            | selectattr('state', 'eq', 'on')
+            | list | count
+          )
+        }}
 
     - name: "Fans On Counter"
       unique_id: "fans_on_counter"
