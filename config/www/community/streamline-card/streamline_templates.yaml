@@ -27,6 +27,8 @@ lutron_light:
   default:
     - name:
     - icon:
+    - brightness_override: 0
+    - scale_override: 1
   card:
     type: custom:bubble-card
     card_type: button
@@ -51,6 +53,8 @@ lutron_light:
         target: {}
         data:
           entity_id: '[[entity]]'
+          brightness_override: '[[brightness_override]]'
+          scale_override: '[[scale_override]]'
     modules: []
     styles: |-
       * {
