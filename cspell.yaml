@@ -5,8 +5,10 @@ ignorePaths:
   - .git
   - .vscode
 words:
+  - aqualinkd
   - automations
   - devspace
+  - elif
 ignoreWords: []
 dictionaries: []
 dictionaryDefinitions: []

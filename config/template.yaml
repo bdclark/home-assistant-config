@@ -230,3 +230,58 @@
       unique_id: "workshop_hvac_action"
       icon: mdi:air-conditioner
       state: "{{ state_attr('climate.workshop', 'hvac_action') }}"
+
+- sensor:
+    - name: Pool Mode
+      unique_id: pool_mode
+      icon: |
+        {% set service_mode = states('sensor.aqualinkd_service_mode') %}
+        {% set spa_state = states('switch.aqualinkd_spa') %}
+        {% set filter_state = states('switch.aqualinkd_filter_pump') %}
+        {% if service_mode in ['service', 'timeout'] %}
+          mdi:tools
+        {% elif state_attr('switch.aqualinkd_filter_pump', 'delay') | int(0) == 1 %}
+          mdi:timer-sand
+        {% elif spa_state == 'on' %}
+          mdi:hot-tub
+        {% elif filter_state == 'on' and spa_state == 'off' %}
+          mdi:pump
+        {% elif filter_state == 'off' and spa_state == 'off' %}
+          mdi:pump-off
+        {% else %}
+          mdi:help-circle
+        {% endif %}
+      state: |
+        {% set service_mode = states('sensor.aqualinkd_service_mode') %}
+        {% set spa_state = states('switch.aqualinkd_spa') %}
+        {% set filter_state = states('switch.aqualinkd_filter_pump') %}
+        {% if service_mode in ['service', 'timeout'] %}
+          {{ service_mode }}
+        {% elif state_attr('switch.aqualinkd_filter_pump', 'delay') | int(0) == 1 %}
+          delay
+        {% elif spa_state == 'on' %}
+          spa
+        {% elif filter_state == 'on' and spa_state == 'off' %}
+          filter
+        {% elif filter_state == 'off' and spa_state == 'off' %}
+          off
+        {% else %}
+          unknown
+        {% endif %}
+      availability: "{{ not is_state('switch.aqualinkd_filter_pump', 'unavailable') and not is_state('switch.aqualinkd_spa', 'unavailable') }}"
+
+- switch:
+    - name: Pool Sheers Toggle
+      unique_id: pool_sheers_toggle
+      state: "{{ is_state('switch.aqualinkd_sheers', 'on') }}"
+      turn_on:
+        - condition: state
+          entity_id: switch.aqualinkd_spa
+          state: "off"
+        - action: switch.turn_on
+          target:
+            entity_id: switch.aqualinkd_sheers
+      turn_off:
+        - action: switch.turn_off
+          target:
+            entity_id: switch.aqualinkd_sheers
