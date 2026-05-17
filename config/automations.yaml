@@ -162,3 +162,57 @@
       sound_url: https://ha.clark.zone/local/sounds/mysterious-ringtone.mp3
     metadata: {}
   mode: single
+- id: '1778968407298'
+  alias: Powder Room - Presence
+  description: Lights on/off with presence. Fan turns off 10 minutes after presence
+    clears if it was on. Restart mode cancels the fan delay if presence returns.
+  triggers:
+  - entity_id: binary_sensor.powder_room_presence_presence
+    platform: state
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.powder_room_presence_presence
+        state: 'on'
+      sequence:
+      - alias: Turn on Downlights adaptively only if not already on
+        if:
+        - condition: state
+          entity_id: light.house_powder_room_downlights
+          state: 'off'
+        then:
+        - action: script.turn_on_light_adaptive
+          data:
+            entity_id: light.house_powder_room_downlights
+            scale_factor: 0.75
+      - alias: Turn on Powder Room Vanity
+        action: switch.turn_on
+        target:
+          entity_id: switch.house_powder_room_vanity
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.powder_room_presence_presence
+        state: 'off'
+      sequence:
+      - alias: Turn off Powder Room Downlights
+        action: light.turn_off
+        target:
+          entity_id: light.house_powder_room_downlights
+      - alias: Turn off Powder Room Vanity
+        action: switch.turn_off
+        target:
+          entity_id: switch.house_powder_room_vanity
+      - alias: Wait 10 minutes then turn off fan if on
+        if:
+        - condition: state
+          entity_id: switch.house_powder_room_fan
+          state: 'on'
+        then:
+        - delay:
+            minutes: 10
+        - alias: Turn off Powder Room Fan
+          action: switch.turn_off
+          target:
+            entity_id: switch.house_powder_room_fan
+  mode: restart
