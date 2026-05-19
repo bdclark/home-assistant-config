@@ -1,0 +1,5 @@
+- sensor:
+    - name: "Workshop HVAC Action"
+      unique_id: "workshop_hvac_action"
+      icon: mdi:air-conditioner
+      state: "{{ state_attr('climate.workshop', 'hvac_action') }}"
