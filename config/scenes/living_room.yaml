@@ -1,0 +1,17 @@
+- name: Movie Time
+  entities:
+    light.living_room_sofa_table:
+      state: "on"
+      brightness: 31
+      color_temp_kelvin: 2200
+      transition: 3
+    light.living_room_floor_lamp:
+      state: "on"
+      brightness: 13
+      color_temp_kelvin: 2200
+      transition: 3
+
+- name: Bed Time
+  entities:
+    light.living_room:
+      state: "off"

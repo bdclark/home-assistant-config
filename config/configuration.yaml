@@ -57,10 +57,13 @@ frontend:
     - /local/community/custom-brand-icons/custom-brand-icons.js
     - /hacsfiles/lovelace-card-mod/card-mod.js?hacstag=190927524421
 
-automation: !include automations.yaml
+# Handmade automations
+automation manual: !include_dir_merge_list automations/
+# Automations created in UI
+automation ui: !include automations.yaml
 script: !include scripts.yaml
-scene: !include scenes.yaml
-sensor: !include sensor.yaml
+scene: !include_dir_merge_list scenes/
+sensor: !include_dir_merge_list sensors/
 template: !include template.yaml
 
 waste_collection_schedule:
