@@ -1,0 +1,256 @@
+# Living Room Home Theater Universal Media Player
+# Onkyo TX-RZ830 AVR (Sonos ready), Apple TV 4K, NVIDIA Shield
+# Onkyo source list: CBL/SAT, Shield, AUX, PC, BD/DVD, Apple TV, TV, PHONO, Sonos, TUNER, NETWORK, BLUETOOTH
+# Apple TV app list is static fallback for environments where source_list is unavailable.
+media_player:
+  - platform: universal
+    name: "Living Room Home Theater"
+    unique_id: home_theater
+    children:
+      - media_player.living_room_apple_tv  # Apple TV 4K
+      - media_player.living_room_shield_android_remote  # NVIDIA Shield
+      - media_player.tx_rz830  # Onkyo TX-RZ830 AVR
+      - media_player.living_room_tv_android_remote  # Sony TV
+      - media_player.living_room  # Sonos
+    active_child_template: |
+      {% set avr_source = state_attr('media_player.tx_rz830', 'source') %}
+      {% if avr_source == 'Apple TV' %}
+        media_player.living_room_apple_tv
+      {% elif avr_source == 'Shield' %}
+        media_player.living_room_shield_android_remote
+      {% elif avr_source == 'Sonos' %}
+        media_player.living_room
+      {% elif avr_source == 'TV' %}
+        media_player.living_room_tv_android_remote
+      {% else %}
+        media_player.tx_rz830
+      {% endif %}
+    commands:
+      turn_on:
+        action: script.home_theater_select_source
+        data:
+          source: Apple TV
+      turn_off:
+        action: script.home_theater_all_off
+      # volume_up:
+      #   action: media_player.volume_up
+      #   target:
+      #     entity_id: media_player.tx_rz830
+      # volume_down:
+      #   action: media_player.volume_down
+      #   target:
+      #     entity_id: media_player.tx_rz830
+      # volume_mute:
+      #   action: media_player.volume_mute
+      #   target:
+      #     entity_id: media_player.tx_rz830
+      # volume_set:
+      #   action: media_player.volume_set
+      #   target:
+      #     entity_id: media_player.receiver
+      #   data:
+      #     volume_level: "{{ volume_level }}"
+      select_source:
+        action: script.home_theater_select_source
+        data:
+          source: "{{ source }}"
+    attributes:
+      # is_volume_muted: media_player.tx_rz830|is_volume_muted
+      # volume_level: media_player.tx_rz830|volume_level
+      source: sensor.home_theater_source_router
+      source_list: sensor.home_theater_source_router|source_list
+
+template:
+  - sensor:
+      - name: Home Theater Source Router
+        unique_id: home_theater_source_router
+        icon: mdi:source-branch
+        state: >
+          {% set avr_source = state_attr('media_player.tx_rz830', 'source') %}
+          {% set atv_app_name = state_attr('media_player.living_room_apple_tv', 'app_name') %}
+          {% set atv_source = state_attr('media_player.living_room_apple_tv', 'source') %}
+          {% if avr_source == 'Apple TV' %}
+            {{ atv_app_name or atv_source or 'Apple TV' }}
+          {% else %}
+            {{ avr_source or 'unknown' }}
+          {% endif %}
+        attributes:
+          source_list: >
+            {% set avr_sources = state_attr('media_player.tx_rz830', 'source_list') or [] %}
+            {% set atv_static_sources = [
+              'TV',
+              'Music',
+              'App Store',
+              'Netflix',
+              'YouTube',
+              'Disney+',
+              'Hulu',
+              'Prime Video',
+              'HBO Max',
+              'Peacock',
+              'Paramount+',
+              'Infuse'
+            ] %}
+            {% set atv_sources = state_attr('media_player.living_room_apple_tv', 'source_list') or atv_static_sources %}
+            {{ (avr_sources + atv_sources) | unique | list }}
+
+script:
+  home_theater_select_source:
+    alias: "Home Theater - Select Source"
+    description: "Powers on the AV receiver and selects a source, waiting for it to be ready before switching input."
+    icon: mdi:audio-video
+    mode: restart
+    variables:
+      avr_sources: "{{ state_attr('media_player.tx_rz830', 'source_list') or [] }}"
+      atv_static_sources:
+        - TV
+        - Music
+        - App Store
+        - Netflix
+        - YouTube
+        - Disney+
+        - Hulu
+        - Prime Video
+        - HBO Max
+        - Peacock
+        - Paramount+
+        - Infuse
+      atv_sources: "{{ state_attr('media_player.living_room_apple_tv', 'source_list') or atv_static_sources }}"
+    fields:
+      source:
+        name: Source
+        description: The input source to select (e.g. Shield, Apple TV, TV)
+        required: true
+        example: Shield
+        selector:
+          text:
+    sequence:
+      - service: media_player.turn_on
+        target:
+          entity_id: media_player.tx_rz830
+      - wait_template: "{{ is_state('media_player.tx_rz830', 'on') }}"
+        timeout: "00:00:15"
+        continue_on_timeout: false
+      - choose:
+          # Special handling for specific AVR sources
+          - conditions:
+              - condition: template
+                value_template: "{{ source == 'Apple TV' }}"
+            sequence:
+              - service: media_player.select_source
+                target:
+                  entity_id: media_player.tx_rz830
+                data:
+                  source: Apple TV
+              - service: media_player.turn_on
+                target:
+                  entity_id: media_player.living_room_apple_tv
+          - conditions:
+              - condition: template
+                value_template: "{{ source == 'Shield' }}"
+            sequence:
+              - service: media_player.select_source
+                target:
+                  entity_id: media_player.tx_rz830
+                data:
+                  source: Shield
+              - service: media_player.turn_on
+                target:
+                  entity_id: media_player.living_room_shield_android_remote
+              - wait_template: "{{ not is_state('media_player.living_room_shield_android_remote', 'off') }}"
+                timeout: "00:00:30"
+                continue_on_timeout: false
+              - delay:
+                  milliseconds: 500
+              - service: media_player.play_media
+                target:
+                  entity_id: media_player.living_room_shield_android_remote
+                data:
+                  media_content_type: app
+                  media_content_id: com.plexapp.android
+          # Else if an ATV source, wait for the Apple TV to be on and select it
+          - conditions:
+              - condition: template
+                value_template: "{{ source in atv_sources }}"
+            sequence:
+              - service: script.turn_on
+                target:
+                  entity_id: script.atv_turn_on_with_source
+                data:
+                  variables:
+                    source: "{{ source }}"
+                    atv_entity_id: media_player.living_room_apple_tv
+        default:
+          # Else, select the source on the AVR directly
+          - service: media_player.select_source
+            target:
+              entity_id: media_player.tx_rz830
+            data:
+              source: "{{ source }}"
+
+  home_theater_all_off:
+    alias: Home Theater - All Off
+    description: Powers down the living room AV chain in the correct order.
+    icon: mdi:power
+    mode: single
+    sequence:
+      - alias: Turn off TV first (kills CEC chain)
+        if:
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: media_player.living_room_tv_android_remote
+                state: "off"
+        then:
+          - action: media_player.turn_off
+            target:
+              entity_id: media_player.living_room_tv_android_remote
+      - alias: Wait for TV to confirm off
+        wait_for_trigger:
+          - trigger: state
+            entity_id: media_player.living_room_tv_android_remote
+            to: "off"
+        timeout:
+          seconds: 15
+        continue_on_timeout: true
+      - alias: Turn off Shield (only if on)
+        if:
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: media_player.living_room_shield_android_remote
+                state: "off"
+        then:
+          - action: media_player.turn_off
+            target:
+              entity_id: media_player.living_room_shield_android_remote
+      - alias: Turn off Apple TV (only if on)
+        if:
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: media_player.living_room_apple_tv
+                state: "off"
+        then:
+          - action: media_player.turn_off
+            target:
+              entity_id: media_player.living_room_apple_tv
+      - alias: Wait for Shield to confirm off
+        wait_for_trigger:
+          - trigger: state
+            entity_id: media_player.living_room_shield_android_remote
+            to: "off"
+        timeout:
+          seconds: 20
+        continue_on_timeout: true
+      - alias: Turn off AVR last (only if on)
+        if:
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: media_player.tx_rz830
+                state: "off"
+        then:
+          - action: media_player.turn_off
+            target:
+              entity_id: media_player.tx_rz830
