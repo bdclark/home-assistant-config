@@ -1,0 +1,25 @@
+- id: exterior_sunrise_off
+  alias: Exterior Sunrise Off
+  description: >-
+    Turn off exterior and patio lighting at apparent sunrise based on sun2 phase
+    (home_sun_phase = Day), including exterior landscape and pool lights.
+  trigger:
+    - platform: state
+      entity_id: sensor.home_sun_phase
+      to: Day
+  condition: []
+  action:
+    - alias: Turn off exterior and patio lights by area
+      service: light.turn_off
+      target:
+        area_id:
+          - exterior
+          - patio
+    - alias: Turn off exterior landscape and pool light switches
+      service: switch.turn_off
+      target:
+        entity_id:
+          - switch.exterior_landscape_north_landscape
+          - switch.exterior_landscape_rear_landscape
+          - switch.aqualinkd_lights
+  mode: single

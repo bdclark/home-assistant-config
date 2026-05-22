@@ -1,0 +1,42 @@
+- name: Movie Time
+  entities:
+    light.living_room_sofa_table:
+      state: "on"
+      brightness: 31
+      color_temp_kelvin: 2200
+      transition: 3
+    light.living_room_floor_lamp:
+      state: "on"
+      brightness: 13
+      color_temp_kelvin: 2200
+      transition: 3
+
+- name: Bed Time
+  entities:
+    light.living_room:
+      state: "off"
+
+- name: Early Morning
+  entities:
+    light.living_room_sofa_table:
+      state: "on"
+      brightness: 48
+      color_temp_kelvin: 2200
+      transition: 3
+    light.living_room_floor_lamp:
+      state: "on"
+      brightness: 28
+      color_temp_kelvin: 2200
+      transition: 3
+    light.house_kitchen_chandelier:
+      state: "on"
+      brightness: 15
+      transition: 3
+    light.house_kitchen_sconces:
+      state: "on"
+      brightness: 15
+      transition: 3
+    light.house_kitchen_under_cabinet:
+      state: "on"
+      brightness: 78
+      transition: 3

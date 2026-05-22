@@ -264,18 +264,21 @@ doorbell_announce:
         text: {}
   sequence:
   - variables:
-      target_players: "{% set players = namespace(list=[]) %}\n{% set players.list
-        = players.list + ['media_player.kitchen_mass'] %}\n{% set players.list = players.list
-        + ['media_player.patio_mass'] %}\n{% set players.list = players.list + ['media_player.master_bedroom_mass']
-        %}\n{% set players.list = players.list + ['media_player.master_bath_mass']
-        %}\n{% set players.list = players.list + ['media_player.guest_bath_mass']
-        %}\n{% if now().hour >= 8 and now().hour < 21 %}\n  {% set players.list =
-        players.list + ['media_player.fire_pit_mass'] %}\n{% endif %}\n{{ players.list
-        }}"
+      default_sound_url: https://ha.clark.zone/local/sounds/mysterious-ringtone.mp3
+      target_players: |
+        {% set players = namespace(list=[]) %}
+        {% set players.list = players.list + ['media_player.kitchen_mass'] %}
+        {% set players.list = players.list + ['media_player.patio_mass'] %}
+        {% set players.list = players.list + ['media_player.master_bedroom_mass'] %}
+        {% set players.list = players.list + ['media_player.master_bath_mass'] %}
+        {% set players.list = players.list + ['media_player.guest_bath_mass'] %}
+        {% if now().hour >= 8 and now().hour < 21 %}
+          {% set players.list = players.list + ['media_player.fire_pit_mass'] %}
+        {% endif %}
+        {{ players.list }}
   - action: music_assistant.play_announcement
     data:
-      url: '{{ sound_url | default(''https://ha.clark.zone/local/sounds/mysterious-ringtone.mp3'')
-        }}'
+      url: "{{ sound_url | default(default_sound_url) }}"
     target:
       entity_id: '{{ target_players }}'
 toggle_lutron_light:

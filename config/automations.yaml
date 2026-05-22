@@ -153,8 +153,10 @@
   alias: Front Doorbell Ring
   description: Trigger announcement when front doorbell button is pressed
   triggers:
-  - entity_id: sensor.front_doorbell_last_doorbell_ring
-    trigger: state
+    - trigger: webhook
+      webhook_id: front-doorbell-09cb5042ec9842ac832976deba0a2495
+      allowed_methods:
+        - POST
   conditions: []
   actions:
   - action: script.doorbell_announce
@@ -168,7 +170,7 @@
     clears if it was on. Restart mode cancels the fan delay if presence returns.
   triggers:
   - entity_id: binary_sensor.powder_room_presence_presence
-    platform: state
+    trigger: state
   actions:
   - choose:
     - conditions:
@@ -186,6 +188,7 @@
           data:
             entity_id: light.house_powder_room_downlights
             scale_factor: 0.75
+            transition: 2
       - alias: Turn on Powder Room Vanity
         action: switch.turn_on
         target:
