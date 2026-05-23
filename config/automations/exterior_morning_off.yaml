@@ -6,7 +6,7 @@
   trigger:
     - platform: state
       entity_id: sensor.home_sun_phase
-      to: Day
+      to: day
   condition: []
   action:
     - alias: Turn off exterior and patio lights by area
