@@ -1,0 +1,91 @@
+- id: sofabaton_living_area_activities
+  alias: Sofabaton - Living Area Activities
+  description: >-
+    Routes SofaBaton X2 activity selections to HA scripts.
+    101=Apple TV, 102=Plex/Shield, 255=All Off.
+  trigger:
+    - platform: mqtt
+      topic: activity/80B54E798A70/activity_control_up
+  condition: []
+  action:
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.payload_json.activity_id == 101 }}"
+          sequence:
+            - service: script.avr_turn_on_with_source
+              data:
+                source: Apple TV
+            - service: media_player.turn_on
+              target:
+                entity_id: media_player.living_room_apple_tv
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.payload_json.activity_id == 102 }}"
+          sequence:
+            - service: script.avr_turn_on_with_source
+              data:
+                source: Shield
+            - service: script.shield_launch_plex
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.payload_json.activity_id == 255 }}"
+          sequence:
+            - service: script.living_room_all_off
+  mode: restart
+
+- id: sofabaton_living_area_commands
+  alias: Sofabaton - Living Area Commands
+  description: >-
+    Routes SofaBaton X2 remote button presses.
+    Lights device (4): key 1 = Shades, key 2 = Movie Lighting.
+    Shortcuts device (6): key 1=YouTube, 2=TV, 3=Netflix,
+    4=Paramount+, 5=HBO Max, 6=Infuse.
+  trigger:
+    - platform: mqtt
+      topic: 80B54E798A70/up
+  condition: []
+  action:
+    - variables:
+        shortcuts_sources:
+          1: YouTube
+          2: TV
+          3: Netflix
+          4: Paramount+
+          5: HBO Max
+          6: Infuse
+    - choose:
+        - alias: Key 1 - Shades
+          conditions:
+            - condition: template
+              value_template: >-
+                {{ trigger.payload_json.device_id == 4 and
+                trigger.payload_json.key_id == 1 }}
+          sequence:
+            - service: button.press
+              target:
+                entity_id: button.house_living_room_media_wall_position_3_keypad_shades
+        - alias: Key 2 - Movie Lighting
+          conditions:
+            - condition: template
+              value_template: >-
+                {{ trigger.payload_json.device_id == 4 and
+                trigger.payload_json.key_id == 2 }}
+          sequence:
+            - service: button.press
+              target:
+                entity_id: button.house_living_room_media_wall_position_3_keypad_movie
+        - alias: Device 6 - Shortcuts App Select
+          conditions:
+            - condition: template
+              value_template: >-
+                {{ trigger.payload_json.device_id == 6 and
+                (trigger.payload_json.key_id | int) in shortcuts_sources }}
+          sequence:
+            - service: media_player.select_source
+              target:
+                entity_id: media_player.living_room_apple_tv
+              data:
+                source: >-
+                  {{ shortcuts_sources[trigger.payload_json.key_id | int] }}
+  mode: parallel
