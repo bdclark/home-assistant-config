@@ -1,0 +1,566 @@
+state_line_plus:
+  name: "State Line Plus"
+  version: "v1.0.0"
+  creator: "bdclark"
+  link: ""
+
+  supported:
+    - pop-up
+    - cover
+    - button
+    - media-player
+    - climate
+    - select
+
+  description: |
+    Replace the Bubble Card state line with a configurable list of rows.
+
+    This module uses a new v1 schema (no compatibility guarantees with get_state_attribute).
+
+    Example:
+    <code-block><pre>
+    state_line_plus:
+      separator: " • "
+      multiline: false
+      items:
+        - entity: sensor.living_room_temp
+          icon: mdi:thermometer
+          suffix: "°C"
+        - template: "{{ states('sensor.outdoor_temp') }}"
+          prefix: "Out "
+          icon: mdi:weather-partly-cloudy
+        - value: "All systems normal"
+          icon: mdi:check-circle
+    </pre></code-block>
+
+  code: |
+    ${(() => {
+      const cfg = this.config.state_line_plus || {};
+      const separator = typeof cfg.separator === 'string' ? cfg.separator : ' • ';
+      const multiline = cfg.multiline === true;
+      const iconSize = Number(cfg.icon_size ?? 14);
+      const safeIconSize = Number.isFinite(iconSize) && iconSize > 0 ? iconSize : 14;
+
+      const yamlItems = Array.isArray(cfg.items) ? cfg.items : [];
+      const items = yamlItems;
+
+      const getTarget = () => card.querySelector('.bubble-state');
+      this._slp_state_cache ??= { html: '', observer: null, target: null, generation: 0 };
+      this._slp_render_id = Number(this._slp_render_id || 0);
+
+      const invalidValues = new Set(['', 'unknown', 'unavailable']);
+
+      const hasAnySource = (row) => {
+        let count = 0;
+        if (row.entity) count += 1;
+        if (typeof row.template === 'string' && row.template.trim() !== '') count += 1;
+        if (row.value !== undefined && row.value !== null && String(row.value) !== '') count += 1;
+        return count;
+      };
+
+      const isInvalidValue = (v) => {
+        if (v === undefined || v === null) return true;
+        const s = String(v).trim();
+        return invalidValues.has(s.toLowerCase());
+      };
+
+      const parseTruthy = (v) => {
+        if (typeof v === 'boolean') return v;
+        if (v === undefined || v === null) return false;
+        const s = String(v).trim().toLowerCase();
+        return !(s === '' || s === 'false' || s === '0' || s === 'off' || s === 'no' || s === 'none' || s === 'null');
+      };
+
+      const toText = (v) => String(v ?? '');
+
+      const resolveAttributeName = (attribute) => {
+        if (typeof attribute === 'string') return attribute;
+        if (attribute && typeof attribute === 'object') {
+          if (typeof attribute.attribute === 'string') return attribute.attribute;
+          if (typeof attribute.value === 'string') return attribute.value;
+          if (typeof attribute.name === 'string') return attribute.name;
+        }
+        return null;
+      };
+
+      const resolveColorValue = (color) => {
+        const mapThemeToken = (token) => {
+          const t = token.toLowerCase();
+          const tokenMap = {
+            primary: 'var(--primary-color)',
+            accent: 'var(--accent-color)',
+            text: 'var(--primary-text-color)',
+            'primary-text': 'var(--primary-text-color)',
+            'secondary-text': 'var(--secondary-text-color)',
+            disabled: 'var(--disabled-text-color)',
+            warning: 'var(--warning-color)',
+            error: 'var(--error-color)',
+            success: 'var(--success-color)'
+          };
+          return tokenMap[t] || token;
+        };
+
+        if (typeof color === 'string') {
+          const trimmed = color.trim();
+          return mapThemeToken(trimmed);
+        }
+        if (color && typeof color === 'object') {
+          if (typeof color.rgb_hex === 'string') return mapThemeToken(color.rgb_hex.trim());
+          if (typeof color.hex === 'string') return mapThemeToken(color.hex.trim());
+          if (typeof color.value === 'string') return mapThemeToken(color.value.trim());
+        }
+        return '';
+      };
+
+      const resolveDecimals = (row) => {
+        if (row.decimals === undefined || row.decimals === null || row.decimals === '') return null;
+        const d = Number(row.decimals);
+        if (!Number.isFinite(d)) return null;
+        return Math.max(0, Math.min(6, Math.trunc(d)));
+      };
+
+      const formatEntityNumericValue = (rawValue, decimals, showUnit, entityObj, fallbackFormatted) => {
+        const n = Number(rawValue);
+        if (!Number.isFinite(n)) return fallbackFormatted;
+        const text = decimals > 0 ? n.toFixed(decimals) : String(Math.trunc(n));
+        if (!showUnit) return text;
+        const unit = entityObj?.attributes?.unit_of_measurement;
+        return unit ? `${text} ${unit}` : text;
+      };
+
+      const chooseBatteryIcon = (raw, entityObj) => {
+        const level = parseInt(raw, 10);
+
+        let icon;
+        if (Number.isNaN(level)) icon = 'mdi:battery-unknown';
+        else if (level >= 95) icon = 'mdi:battery';
+        else if (level >= 80) icon = 'mdi:battery-90';
+        else if (level >= 60) icon = 'mdi:battery-70';
+        else if (level >= 40) icon = 'mdi:battery-50';
+        else if (level >= 20) icon = 'mdi:battery-30';
+        else if (level >= 10) icon = 'mdi:battery-20';
+        else icon = 'mdi:battery-alert';
+
+        const stateLower = String(entityObj?.state ?? '').toLowerCase();
+        const chargingAttr = entityObj?.attributes?.charging;
+        const isCharging = stateLower === 'charging' || stateLower === 'on' || chargingAttr === true || String(chargingAttr).toLowerCase() === 'charging';
+        if (isCharging) return 'mdi:battery-charging';
+
+        return icon;
+      };
+
+      const renderRow = (row, valueText, iconName, iconColor) => {
+        const item = document.createElement('span');
+        item.className = 'slp-item';
+
+        const showIcon = row.show_icon !== false;
+        const showText = row.show_text !== false;
+
+        if (!showIcon && !showText) return null;
+
+        if (showIcon && iconName) {
+          const iconEl = document.createElement('ha-icon');
+          iconEl.className = 'slp-icon';
+          iconEl.setAttribute('icon', iconName);
+          if (iconColor) iconEl.style.color = iconColor;
+          item.appendChild(iconEl);
+        }
+
+        if (showText) {
+          const textEl = document.createElement('span');
+          textEl.className = 'slp-text';
+          textEl.textContent = valueText;
+          item.appendChild(textEl);
+        }
+
+        return item;
+      };
+
+      const maybeEvalTemplate = async (templateString) => {
+        try {
+          return await hass.callApi('POST', 'template', { template: templateString });
+        } catch (_e) {
+          return undefined;
+        }
+      };
+
+      const normalizeBoolTemplateResult = (result) => parseTruthy(result);
+
+      const ensureStyles = () => {
+        const styleId = 'state-line-plus-style';
+        if (card.querySelector(`#${styleId}`)) return;
+
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+          .bubble-state.slp-inline {
+            display: inline;
+          }
+
+          .bubble-state.slp-multiline {
+            display: block;
+            white-space: normal;
+          }
+
+          .slp-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            vertical-align: middle;
+          }
+
+          .slp-icon {
+            --mdc-icon-size: ${safeIconSize}px;
+            width: ${safeIconSize}px;
+            height: ${safeIconSize}px;
+          }
+
+          .slp-separator {
+            display: inline;
+            white-space: pre;
+          }
+
+          .bubble-state.slp-multiline .slp-item {
+            display: flex;
+            width: 100%;
+            margin: 0 0 2px 0;
+          }
+
+          .bubble-state.slp-multiline .slp-item:last-child {
+            margin-bottom: 0;
+          }
+        `;
+        card.appendChild(style);
+      };
+
+      const bindObserver = (targetEl, generation) => {
+        const cache = this._slp_state_cache;
+
+        if (cache.target !== targetEl) {
+          if (cache.observer) {
+            cache.observer.disconnect();
+            cache.observer = null;
+          }
+          cache.target = targetEl;
+        }
+
+        cache.generation = generation;
+
+        if (!cache.observer) {
+          const obs = new MutationObserver(() => {
+            const activeTarget = cache.target;
+            if (!activeTarget || !cache.html) return;
+            if (this._slp_render_id !== cache.generation) return;
+            if (!activeTarget.querySelector('.slp-state-marker')) {
+              activeTarget.innerHTML = cache.html;
+            }
+          });
+          obs.observe(targetEl, { childList: true, characterData: true, subtree: true });
+          cache.observer = obs;
+        }
+      };
+
+      const run = async (renderId) => {
+        this._slp_render_id = renderId;
+        const isStale = () => this._slp_render_id !== renderId;
+
+        let target = getTarget();
+        if (!target) return;
+
+        ensureStyles();
+
+        target.classList.remove('slp-inline', 'slp-multiline');
+        target.classList.add(multiline ? 'slp-multiline' : 'slp-inline');
+
+        const rendered = [];
+
+        for (const row of items) {
+          if (!row || typeof row !== 'object') continue;
+
+          if (hasAnySource(row) !== 1) continue;
+
+          if (typeof row.show_when === 'string' && row.show_when.trim() !== '') {
+            const showResult = await maybeEvalTemplate(row.show_when);
+            if (isStale()) return;
+            if (!normalizeBoolTemplateResult(showResult)) continue;
+          }
+
+          let rawValue;
+          let formattedValue;
+          let entityObj = null;
+
+          if (row.entity) {
+            entityObj = hass.states[row.entity];
+            if (!entityObj) continue;
+
+            const attrName = resolveAttributeName(row.attribute);
+            const decimals = resolveDecimals(row);
+            const showUnit = row.show_unit !== false;
+            if (attrName) {
+              rawValue = entityObj.attributes?.[attrName];
+              if (!isInvalidValue(rawValue)) {
+                try {
+                  formattedValue = hass.formatEntityAttributeValue(entityObj, attrName);
+                } catch (_e) {
+                  formattedValue = rawValue;
+                }
+                if (decimals !== null) {
+                  formattedValue = formatEntityNumericValue(rawValue, decimals, showUnit, entityObj, formattedValue);
+                }
+              }
+            } else {
+              rawValue = entityObj.state;
+              if (!isInvalidValue(rawValue)) {
+                try {
+                  formattedValue = hass.formatEntityState(entityObj);
+                } catch (_e) {
+                  formattedValue = rawValue;
+                }
+                if (decimals !== null) {
+                  formattedValue = formatEntityNumericValue(rawValue, decimals, showUnit, entityObj, formattedValue);
+                }
+              }
+            }
+          } else if (typeof row.template === 'string' && row.template.trim() !== '') {
+            rawValue = await maybeEvalTemplate(row.template);
+            if (isStale()) return;
+            if (!isInvalidValue(rawValue)) {
+              formattedValue = rawValue;
+            }
+          } else if (row.value !== undefined && row.value !== null && String(row.value) !== '') {
+            rawValue = row.value;
+            if (!isInvalidValue(rawValue)) {
+              formattedValue = rawValue;
+            }
+          }
+
+          if (isInvalidValue(formattedValue)) {
+            if (!isInvalidValue(row.fallback)) {
+              formattedValue = row.fallback;
+            } else {
+              continue;
+            }
+          }
+
+          const text = `${toText(row.prefix)}${toText(formattedValue)}${toText(row.suffix)}`;
+          if (isInvalidValue(text)) continue;
+
+          let iconName = '';
+          const useEntityIcon = row.use_entity_icon !== false;
+
+          if (row.icon === 'battery') {
+            iconName = chooseBatteryIcon(rawValue, entityObj);
+          } else if (typeof row.icon_template === 'string' && row.icon_template.trim() !== '') {
+            const dynIcon = await maybeEvalTemplate(row.icon_template);
+            if (isStale()) return;
+            if (!isInvalidValue(dynIcon)) {
+              iconName = toText(dynIcon).trim();
+            } else if (typeof row.icon === 'string') {
+              iconName = row.icon;
+            }
+          } else if (typeof row.icon === 'string') {
+            iconName = row.icon;
+          }
+
+          if (!iconName && entityObj && useEntityIcon) {
+            const entityIcon = entityObj.attributes?.icon;
+            if (!isInvalidValue(entityIcon)) {
+              iconName = toText(entityIcon).trim();
+            }
+          }
+
+          let iconColor = '';
+          if (typeof row.icon_color_template === 'string' && row.icon_color_template.trim() !== '') {
+            const dynColor = await maybeEvalTemplate(row.icon_color_template);
+            if (isStale()) return;
+            if (!isInvalidValue(dynColor)) {
+              iconColor = toText(dynColor).trim();
+            } else {
+              iconColor = resolveColorValue(row.icon_color);
+            }
+          } else {
+            iconColor = resolveColorValue(row.icon_color);
+          }
+
+          const renderedRow = renderRow(row, text, iconName, iconColor);
+          if (renderedRow) rendered.push(renderedRow);
+        }
+
+        if (isStale()) return;
+        target = getTarget();
+        if (!target) return;
+
+        target.classList.remove('slp-inline', 'slp-multiline');
+        target.classList.add(multiline ? 'slp-multiline' : 'slp-inline');
+
+        target.innerHTML = '';
+
+        if (rendered.length === 0) {
+          if (isStale()) return;
+          this._slp_state_cache.generation = renderId;
+          this._slp_state_cache.html = '';
+          bindObserver(target, renderId);
+          return;
+        }
+
+        const marker = document.createElement('span');
+        marker.className = 'slp-state-marker';
+        marker.style.display = 'none';
+        target.appendChild(marker);
+
+        if (multiline) {
+          for (const el of rendered) target.appendChild(el);
+        } else {
+          rendered.forEach((el, i) => {
+            if (i > 0) {
+              const sep = document.createElement('span');
+              sep.className = 'slp-separator';
+              sep.textContent = separator;
+              target.appendChild(sep);
+            }
+            target.appendChild(el);
+          });
+        }
+
+        if (isStale()) return;
+        this._slp_state_cache.html = target.innerHTML;
+        this._slp_state_cache.generation = renderId;
+        bindObserver(target, renderId);
+      };
+
+      const nextRenderId = this._slp_render_id + 1;
+      run(nextRenderId).catch(() => {
+        if (this._slp_render_id !== nextRenderId) return;
+        const target = getTarget();
+        if (target) {
+          target.innerHTML = '';
+          bindObserver(target, nextRenderId);
+        }
+        this._slp_state_cache.html = '';
+        this._slp_state_cache.generation = nextRenderId;
+      });
+    })()}
+
+  editor:
+    - name: separator
+      label: "Separator (default: \" • \")"
+      description: "Text between items when Multiline is off."
+      selector:
+        text: {}
+    - name: multiline
+      label: "Multiline (one item per line)"
+      description: "Show one item per line. Separator is ignored."
+      selector:
+        boolean: {}
+    - name: icon_size
+      label: "Icon Size (px, default: 14)"
+      description: "Global icon size for all items."
+      selector:
+        number:
+          min: 8
+          max: 32
+          step: 1
+    - name: items
+      label: "Items"
+      description: "Add one or more state-line items."
+      selector:
+        object:
+          multiple: true
+          fields:
+            entity:
+              label: "Entity"
+              description: "Source entity for state or attribute."
+              selector:
+                entity: {}
+            template:
+              label: "Template"
+              description: "Jinja template source. Use this OR Entity OR Value."
+              selector:
+                text:
+                  multiline: true
+            value:
+              label: "Value"
+              description: "Static text source. Use this OR Entity OR Template."
+              selector:
+                text: {}
+            attribute:
+              label: "Attribute"
+              description: "Entity attribute key. Leave empty to use entity state."
+              selector:
+                attribute: {}
+            decimals:
+              label: "Decimals (optional)"
+              description: "Numeric formatting override. 0 = integer."
+              selector:
+                number:
+                  min: 0
+                  max: 6
+                  step: 1
+                  mode: box
+            show_unit:
+              label: "Show Unit"
+              description: "Show unit for numeric entity values."
+              default: true
+              selector:
+                boolean: {}
+            icon:
+              label: "Icon"
+              description: "Fixed icon, or use 'battery' for dynamic battery icon."
+              selector:
+                icon: {}
+            show_icon:
+              label: "Show Icon"
+              description: "Show icon for this item."
+              default: true
+              selector:
+                boolean: {}
+            use_entity_icon:
+              label: "Use Entity Icon Fallback"
+              description: "When no icon is set, use the entity's current icon (entity source only)."
+              default: true
+              selector:
+                boolean: {}
+            show_text:
+              label: "Show Text"
+              description: "Show value text for this item."
+              default: true
+              selector:
+                boolean: {}
+            icon_template:
+              label: "Icon Template"
+              description: "Template that returns an icon name (e.g. mdi:thermometer)."
+              selector:
+                text:
+                  multiline: true
+            icon_color:
+              label: "Icon Color (hex/rgb/rgba/css var/theme token)"
+              description: "Examples: #4a90e2, rgba(255,0,0,.6), var(--primary-color), primary."
+              selector:
+                text: {}
+            icon_color_template:
+              label: "Icon Color Template"
+              description: "Template that returns a CSS color value."
+              selector:
+                text:
+                  multiline: true
+            prefix:
+              label: "Prefix"
+              description: "Text added before the resolved value."
+              selector:
+                text: {}
+            suffix:
+              label: "Suffix"
+              description: "Text added after the resolved value."
+              selector:
+                text: {}
+            fallback:
+              label: "Fallback"
+              description: "Used when resolved value is empty/unknown/unavailable."
+              selector:
+                text: {}
+            show_when:
+              label: "Show When (Template)"
+              description: "Template condition. Item is shown only when result is truthy."
+              selector:
+                text:
+                  multiline: true

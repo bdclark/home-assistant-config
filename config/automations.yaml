@@ -152,7 +152,7 @@
           state: 'on'
         then:
         - delay:
-            minutes: 10
+            minutes: 20
         - alias: Turn off Powder Room Fan
           action: switch.turn_off
           target:

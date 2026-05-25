@@ -1,0 +1,14 @@
+- binary_sensor:
+    - name: "Powder Room Occupancy"
+      unique_id: powder_room_occupancy
+      device_class: occupancy
+      availability: >
+        {{ states('binary_sensor.powder_room_presence_presence') in ['on', 'off'] }}
+      state: >
+        {{ is_state('binary_sensor.powder_room_presence_presence', 'on') }}
+      icon: >
+        {% if is_state('binary_sensor.powder_room_presence_presence', 'on') %}
+          mdi:motion-sensor
+        {% else %}
+          mdi:motion-sensor-off
+        {% endif %}
