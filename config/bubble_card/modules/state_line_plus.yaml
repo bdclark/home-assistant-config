@@ -13,35 +13,33 @@ state_line_plus:
     - select
 
   description: |
-    Replace the Bubble Card state line with a configurable list of rows.
-
-    This module uses a new v1 schema (no compatibility guarantees with get_state_attribute).
-
-    Example:
+    Replace the Bubble Card state line with configurable items from entities, attributes, templates, or static values.
+    <p>Control text, icons, colors, visibility, numeric formatting, and inline or multiline layout in a single state-line module.</p>
+    <p><b>Special:</b> Use <code>battery</code> as the icon value for built-in dynamic battery icons, including charging state support.</p>
+    <p>Example:</p>
     <code-block><pre>
     state_line_plus:
       separator: " • "
       multiline: false
       items:
-        - entity: sensor.living_room_temp
-          icon: mdi:thermometer
-          suffix: "°C"
-        - template: "{{ states('sensor.outdoor_temp') }}"
-          prefix: "Out "
-          icon: mdi:weather-partly-cloudy
-        - value: "All systems normal"
-          icon: mdi:check-circle
+        - entity: binary_sensor.powder_room_occupancy
+          hide_text: true
+          icon_color_template: "{{ 'red' if is_state('binary_sensor.powder_room_occupancy', 'on') else '' }}"
+        - entity: sensor.powder_room_presence_temperature
+          decimals: 0
+        - entity: sensor.powder_room_presence_humidity
+          decimals: 0
     </pre></code-block>
 
   code: |
     ${(() => {
-      const cfg = this.config.state_line_plus || {};
+      const cfg = this.config?.state_line_plus ?? {};
       const separator = typeof cfg.separator === 'string' ? cfg.separator : ' • ';
       const multiline = cfg.multiline === true;
       const iconSize = Number(cfg.icon_size ?? 14);
       const safeIconSize = Number.isFinite(iconSize) && iconSize > 0 ? iconSize : 14;
 
-      const yamlItems = Array.isArray(cfg.items) ? cfg.items : [];
+      const yamlItems = Array.isArray(cfg?.items) ? cfg.items : [];
       const items = yamlItems;
 
       const getTarget = () => card.querySelector('.bubble-state');
@@ -153,8 +151,8 @@ state_line_plus:
         const item = document.createElement('span');
         item.className = 'slp-item';
 
-        const showIcon = row.show_icon !== false;
-        const showText = row.show_text !== false;
+        const showIcon = row.hide_icon !== true;
+        const showText = row.hide_text !== true;
 
         if (!showIcon && !showText) return null;
 
@@ -295,7 +293,7 @@ state_line_plus:
 
             const attrName = resolveAttributeName(row.attribute);
             const decimals = resolveDecimals(row);
-            const showUnit = row.show_unit !== false;
+            const showUnit = row.hide_unit !== true;
             if (attrName) {
               rawValue = entityObj.attributes?.[attrName];
               if (!isInvalidValue(rawValue)) {
@@ -346,7 +344,7 @@ state_line_plus:
           if (isInvalidValue(text)) continue;
 
           let iconName = '';
-          const useEntityIcon = row.use_entity_icon !== false;
+          const useEntityIcon = row.ignore_entity_icon !== true;
 
           if (row.icon === 'battery') {
             iconName = chooseBatteryIcon(rawValue, entityObj);
@@ -466,7 +464,14 @@ state_line_plus:
       selector:
         object:
           multiple: true
+          label_field: name
+          description_field: attribute
           fields:
+            name:
+              label: "Name (optional)"
+              description: "Editor label for this item."
+              selector:
+                text: {}
             entity:
               label: "Entity"
               description: "Source entity for state or attribute."
@@ -497,10 +502,9 @@ state_line_plus:
                   max: 6
                   step: 1
                   mode: box
-            show_unit:
-              label: "Show Unit"
-              description: "Show unit for numeric entity values."
-              default: true
+            hide_unit:
+              label: "Hide Unit"
+              description: "Hide unit for numeric entity values."
               selector:
                 boolean: {}
             icon:
@@ -508,22 +512,19 @@ state_line_plus:
               description: "Fixed icon, or use 'battery' for dynamic battery icon."
               selector:
                 icon: {}
-            show_icon:
-              label: "Show Icon"
-              description: "Show icon for this item."
-              default: true
+            hide_icon:
+              label: "Hide Icon"
+              description: "Hide icon for this item."
               selector:
                 boolean: {}
-            use_entity_icon:
-              label: "Use Entity Icon Fallback"
-              description: "When no icon is set, use the entity's current icon (entity source only)."
-              default: true
+            ignore_entity_icon:
+              label: "Ignore Entity Icon"
+              description: "Do not use the entity's current icon as fallback."
               selector:
                 boolean: {}
-            show_text:
-              label: "Show Text"
-              description: "Show value text for this item."
-              default: true
+            hide_text:
+              label: "Hide Text"
+              description: "Hide value text for this item."
               selector:
                 boolean: {}
             icon_template:
