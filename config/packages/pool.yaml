@@ -37,6 +37,7 @@ template:
             unknown
           {% endif %}
         availability: "{{ not is_state('switch.aqualinkd_filter_pump', 'unavailable') and not is_state('switch.aqualinkd_spa', 'unavailable') }}"
+
   - binary_sensor:
       - name: Pool Spa Ready
         unique_id: pool_spa_ready
@@ -64,6 +65,7 @@ template:
             and state_attr('climate.aqualinkd_spa_heater', 'current_temperature') is not none
             and state_attr('climate.aqualinkd_spa_heater', 'temperature') is not none
           }}
+
   - switch:
       - name: Pool Sheers Toggle
         unique_id: pool_sheers_toggle

@@ -11,9 +11,12 @@
       color_temp_kelvin: 2200
       transition: 3
 
+# Used in conjunction with Lutron RadioRA 3 scene
 - name: Bed Time
   entities:
     light.living_room:
+      state: "off"
+    switch.aqualinkd_lights:
       state: "off"
 
 - name: Early Morning
