@@ -43,7 +43,14 @@ state_line_plus:
       const items = yamlItems;
 
       const getTarget = () => card.querySelector('.bubble-state');
-      this._slp_state_cache ??= { html: '', observer: null, target: null, generation: 0 };
+      this._slp_state_cache ??= {
+        html: '',
+        mode: 'empty',
+        observer: null,
+        styleSize: null,
+        target: null,
+        generation: 0
+      };
       this._slp_render_id = Number(this._slp_render_id || 0);
 
       const invalidValues = new Set(['', 'unknown', 'unavailable']);
@@ -117,13 +124,93 @@ state_line_plus:
         return Math.max(0, Math.min(6, Math.trunc(d)));
       };
 
+      const getNumberLocale = () => hass?.locale?.language || hass?.language || undefined;
+
+      const inferFractionDigits = (rawValue) => {
+        if (typeof rawValue === 'string') {
+          const trimmed = rawValue.trim();
+          const match = trimmed.match(/^-?\d+(?:\.(\d+))?$/);
+          if (match) return match[1]?.length ?? 0;
+        }
+
+        if (typeof rawValue === 'number' && Number.isFinite(rawValue)) {
+          const asString = rawValue.toString();
+          const match = asString.match(/^-?\d+(?:\.(\d+))?$/);
+          if (match) return match[1]?.length ?? 0;
+        }
+
+        return null;
+      };
+
+      const formatLocalizedNumber = (value, decimals) => {
+        const options = decimals === null
+          ? { maximumFractionDigits: Math.min(6, inferFractionDigits(value) ?? 6) }
+          : { minimumFractionDigits: decimals, maximumFractionDigits: decimals };
+
+        return new Intl.NumberFormat(getNumberLocale(), options).format(value);
+      };
+
+      const extractFormattedNumberAffixes = (formattedValue, rawValue) => {
+        if (formattedValue === undefined || formattedValue === null) return null;
+
+        const formattedText = String(formattedValue);
+        const n = Number(rawValue);
+        if (!Number.isFinite(n)) return null;
+
+        let baseText;
+        try {
+          baseText = formatLocalizedNumber(n, null);
+        } catch (_e) {
+          baseText = String(rawValue);
+        }
+
+        const start = formattedText.indexOf(baseText);
+        if (start === -1) return null;
+
+        return {
+          prefix: formattedText.slice(0, start),
+          suffix: formattedText.slice(start + baseText.length)
+        };
+      };
+
       const formatEntityNumericValue = (rawValue, decimals, showUnit, entityObj, fallbackFormatted) => {
         const n = Number(rawValue);
         if (!Number.isFinite(n)) return fallbackFormatted;
-        const text = decimals > 0 ? n.toFixed(decimals) : String(Math.trunc(n));
+        let text;
+
+        try {
+          const normalizedValue = decimals === 0 ? Math.round(n) : n;
+          text = formatLocalizedNumber(normalizedValue, decimals);
+        } catch (_e) {
+          if (decimals === null) {
+            text = String(rawValue);
+          } else if (decimals === 0) {
+            text = String(Math.round(n));
+          } else {
+            text = n.toFixed(decimals);
+          }
+        }
+
         if (!showUnit) return text;
         const unit = entityObj?.attributes?.unit_of_measurement;
         return unit ? `${text} ${unit}` : text;
+      };
+
+      const formatEntityValue = (rawValue, decimals, showUnit, entityObj, fallbackFormatted) => {
+        const numericFormatted = formatEntityNumericValue(rawValue, decimals, showUnit, entityObj, null);
+        if (numericFormatted === null || numericFormatted === undefined) return fallbackFormatted;
+
+        if (!showUnit) return numericFormatted;
+
+        const explicitUnit = entityObj?.attributes?.unit_of_measurement;
+        if (explicitUnit) return numericFormatted;
+
+        const affixes = extractFormattedNumberAffixes(fallbackFormatted, rawValue);
+        if (affixes && (affixes.prefix !== '' || affixes.suffix !== '')) {
+          return `${affixes.prefix}${numericFormatted}${affixes.suffix}`;
+        }
+
+        return fallbackFormatted ?? numericFormatted;
       };
 
       const chooseBatteryIcon = (raw, entityObj) => {
@@ -185,12 +272,9 @@ state_line_plus:
       const normalizeBoolTemplateResult = (result) => parseTruthy(result);
 
       const ensureStyles = () => {
+        const cache = this._slp_state_cache;
         const styleId = 'state-line-plus-style';
-        if (card.querySelector(`#${styleId}`)) return;
-
-        const style = document.createElement('style');
-        style.id = styleId;
-        style.textContent = `
+        const cssText = `
           .bubble-state.slp-inline {
             display: inline;
           }
@@ -228,7 +312,18 @@ state_line_plus:
             margin-bottom: 0;
           }
         `;
-        card.appendChild(style);
+
+        let style = card.querySelector(`#${styleId}`);
+        if (!style) {
+          style = document.createElement('style');
+          style.id = styleId;
+          card.appendChild(style);
+        }
+
+        if (cache.styleSize !== safeIconSize || style.textContent !== cssText) {
+          style.textContent = cssText;
+          cache.styleSize = safeIconSize;
+        }
       };
 
       const bindObserver = (targetEl, generation) => {
@@ -247,9 +342,18 @@ state_line_plus:
         if (!cache.observer) {
           const obs = new MutationObserver(() => {
             const activeTarget = cache.target;
-            if (!activeTarget || !cache.html) return;
+            if (!activeTarget) return;
             if (this._slp_render_id !== cache.generation) return;
-            if (!activeTarget.querySelector('.slp-state-marker')) {
+            const hasMarker = !!activeTarget.querySelector('.slp-state-marker');
+
+            if (cache.mode === 'empty') {
+              if (activeTarget.innerHTML !== '') {
+                activeTarget.innerHTML = '';
+              }
+              return;
+            }
+
+            if (cache.mode === 'html' && cache.html && !hasMarker) {
               activeTarget.innerHTML = cache.html;
             }
           });
@@ -302,9 +406,7 @@ state_line_plus:
                 } catch (_e) {
                   formattedValue = rawValue;
                 }
-                if (decimals !== null) {
-                  formattedValue = formatEntityNumericValue(rawValue, decimals, showUnit, entityObj, formattedValue);
-                }
+                formattedValue = formatEntityValue(rawValue, decimals, showUnit, entityObj, formattedValue);
               }
             } else {
               rawValue = entityObj.state;
@@ -314,9 +416,7 @@ state_line_plus:
                 } catch (_e) {
                   formattedValue = rawValue;
                 }
-                if (decimals !== null) {
-                  formattedValue = formatEntityNumericValue(rawValue, decimals, showUnit, entityObj, formattedValue);
-                }
+                formattedValue = formatEntityValue(rawValue, decimals, showUnit, entityObj, formattedValue);
               }
             }
           } else if (typeof row.template === 'string' && row.template.trim() !== '') {
@@ -395,6 +495,8 @@ state_line_plus:
 
         if (rendered.length === 0) {
           if (isStale()) return;
+          target.innerHTML = '';
+          this._slp_state_cache.mode = 'empty';
           this._slp_state_cache.generation = renderId;
           this._slp_state_cache.html = '';
           bindObserver(target, renderId);
@@ -421,6 +523,7 @@ state_line_plus:
         }
 
         if (isStale()) return;
+        this._slp_state_cache.mode = 'html';
         this._slp_state_cache.html = target.innerHTML;
         this._slp_state_cache.generation = renderId;
         bindObserver(target, renderId);
@@ -434,6 +537,7 @@ state_line_plus:
           target.innerHTML = '';
           bindObserver(target, nextRenderId);
         }
+        this._slp_state_cache.mode = 'empty';
         this._slp_state_cache.html = '';
         this._slp_state_cache.generation = nextRenderId;
       });
