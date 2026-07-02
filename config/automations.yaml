@@ -25,6 +25,13 @@
     path: bengber/lutron-sunnata-keypad-click-long-click-double-click.yaml
     input:
       sunnata_keypad: aa916d18a22b3513ea789e3130c81bbd
+      button_3_single_click:
+      - action: scene.turn_on
+        metadata: {}
+        target:
+          entity_id: scene.early_morning
+        data:
+          transition: 2
       button_4_single_click:
       - action: scene.turn_on
         metadata: {}
