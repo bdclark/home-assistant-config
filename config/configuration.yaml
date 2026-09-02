@@ -41,11 +41,6 @@ homeassistant:
   internal_url: https://ha.clark.zone
   packages: !include_dir_named packages
 
-http:
-  use_x_forwarded_for: true
-  trusted_proxies:
-    - 10.42.0.0/16
-
 recorder:
   db_url: !env_var POSTGRES_URI
   purge_keep_days: 60

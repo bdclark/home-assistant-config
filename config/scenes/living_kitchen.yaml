@@ -18,6 +18,10 @@
       state: "off"
     switch.aqualinkd_lights:
       state: "off"
+    light.patio_fan_1:
+      state: "off"
+    switch.workshop_light_plug:
+      state: "off"
 
 - name: Early Morning
   entities:
