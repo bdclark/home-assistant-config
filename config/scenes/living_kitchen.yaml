@@ -20,6 +20,8 @@
       state: "off"
     light.patio_fan_1:
       state: "off"
+    fan.patio_fan_1:
+      state: "off"
     switch.workshop_light_plug:
       state: "off"
 
