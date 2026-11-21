@@ -17,6 +17,7 @@ dev:
           - .devspace/
           - .git/
           - .ha_run.lock
+          - .ha_mcp/
           - .HA_VERSION
           - .storage/
           - .local/
@@ -33,9 +34,14 @@ dev:
           - lost+found/
           - secrets.yaml # Managed by Kubernetes secrets
           - tts/
-          # - bubble_card/
+          - bubble_card/  # Synced separately so remote wins
+          - themes/  # Synced separately so remote wins
         uploadExcludePaths:
           - www/sounds/
         initialSync: preferNewest
+      - path: ./config/themes:/config/themes
+        initialSync: mirrorRemote
+      - path: ./config/bubble_card:/config/bubble_card
+        initialSync: mirrorRemote
     terminal:
       enabled: false
